@@ -50,11 +50,15 @@ PANELS = [
         ("can", "can_pressure", "CAN", 1)]),
     ("Vazão", "L/min", [
         ("can", "can_flow", "CAN can_flow", 1),
+        ("can", "flow_lmin", "flow_lmin (Jacto STM)", 1),
         ("can", "predicted_flow", "predicted_flow (bomba)", 1),
         ("can", "target_liters_flow", "target_liters_flow", 1),
         ("can", "current_nominal_flow", "current_nominal_flow", 1),
         ("can", "braglia_flow", "braglia_flow", 1),
         ("details", "Flowmeter", "flowmeter (f)", 1)]),
+    ("Vazão da bomba (Jacto)", "L/min", [
+        ("can", "pump_flow", "pump_flow 1AFFFFFC", 1),
+        ("can", "sent_machine_flow", "sent_machine_flow", 1)]),
     ("Taxa aplicada", "L/ha", [
         ("can", "can_rate", "CAN can_rate", 1),
         ("details", "Usage_mlHa", "Usage_mlHa / 1000", 0.001),
@@ -65,6 +69,11 @@ PANELS = [
     ("PWM", "%", [
         ("can", "pwm_wdt_system", "pwm_wdt_system", 1),
         ("can", "can_pump_pwm", "can_pump_pwm", 1)]),
+    ("PWM da bomba (Jacto)", "bruto", [
+        ("can", "machine_pwm", "machine_pwm", 1),
+        ("can", "pump_pwm", "pump_pwm", 1)]),
+    ("Rotação do motor", "rpm", [("can", "engine_rpm", "engine_rpm", 1)]),
+    ("Rotação da bomba", "bruto (unidade não documentada)", [("can", "pump_rpm", "pump_rpm", 1)]),
     ("Tensão de alimentação", "V", [("vol", "Vol", "VOL / 10", 0.1)]),
     ("Delta de velocidade (curva)", "bruto", [
         ("speed", "wdt_deltac", "wdt_deltac", 1),
@@ -122,7 +131,7 @@ def draw_panels(parts, spec, step, title, out, per_panel_axis=False):
         ax.spines[["top", "right"]].set_visible(False)
         ax.ticklabel_format(axis="y", style="plain", useOffset=False)
         if len(series) > 1:                     # legenda fora da área de dados
-            ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=min(len(series), 4),
+            ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=len(series),
                       labelcolor=INK2, handlelength=1.4, columnspacing=1.4, borderpad=0)
     axes[-1].set_xlabel("tempo")
     fig.suptitle(title, x=0.007, ha="left", fontsize=11, color=INK)
@@ -275,7 +284,8 @@ def main():
     ap.add_argument("--out", default="plots")
     ap.add_argument("--step", default="1s", help="reamostragem dos painéis (default 1s)")
     ap.add_argument("--model", default="quadro", choices=["quadro", "ag"])
-    ap.add_argument("--bitola", type=int, default=6000)
+    ap.add_argument("--bitola", type=int, default=None, help="default: cabeçalho do log")
+    ap.add_argument("--members", help="glob dos .txt dentro do zip (zip Jacto com vários logs)")
     ap.add_argument("--selftest", action="store_true", help="checa a ordem de bits e sai")
     a = ap.parse_args()
 
@@ -283,12 +293,13 @@ def main():
         return selftest()
 
     outdir = Path(a.out); outdir.mkdir(parents=True, exist_ok=True)
-    cfg, df, parts = load_parser().convert(a.log, bitola_mm=a.bitola)
-    print(f"log: {a.log}\nlinhas: {len(df)}  janela: {df.Time.min()} → {df.Time.max()}")
+    cfg, df, parts = load_parser().convert(a.log, bitola_mm=a.bitola, members=a.members)
+    name = " ".join(filter(None, [df.attrs["machine_code"], Path(a.log).stem]))
+    print(f"log: {a.log} ({len(df.attrs['files'])} arquivo(s), {name})\nlinhas: {len(df)}  janela: {df.Time.min()} → {df.Time.max()}")
 
     made = [
-        draw_panels(parts, PANELS, a.step, f"Log {Path(a.log).stem} — visão operacional", outdir / "overview.png"),
-        draw_panels(parts, COUNTERS, a.step, f"Log {Path(a.log).stem} — contadores acumulados",
+        draw_panels(parts, PANELS, a.step, f"Log {name} — visão operacional", outdir / "overview.png"),
+        draw_panels(parts, COUNTERS, a.step, f"Log {name} — contadores acumulados",
                     outdir / "counters.png", per_panel_axis=True),
         draw_nozzles(parts, a.model, outdir / "nozzles.png"),
         draw_gps(parts, outdir / "gps.png"),

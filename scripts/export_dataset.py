@@ -39,14 +39,22 @@ UNITS = {
     "nozzles_on": "contagem de bicos disparando",
     "sections_on": "contagem de bicos habilitados",
     "cdd_mean": "0-255 (media na barra)", "cdd_max": "0-255", "var_mean": "0-255",
+    # Jacto
+    "flow_lmin": "L/min", "pump_flow": "L/min", "sent_machine_flow": "L/min",
+    "stm_flow": "L/min", "engine_rpm": "rpm",
 }
+
+# vazão MEDIDA na barra. Só a JD tem (flowmeter no CAN). Na Jacto o flow_lmin é o
+# predicted_flow da STM (corr 0,999, sem atraso) e o pump_flow é a vazão total da
+# bomba (inclui retorno) — nenhum dos dois serve: flow_measured sai null.
+FLOW_MEASURED = ["can_flow"]
 
 # sugestão de partição entrada/saída para identificar a malha bomba -> pressão/vazão.
 # Nomes ORIGINAIS de coluna; o `main` traduz para os nomes exportados.
 IO_HINT_COLS = {
     "inputs": ["pwm_wdt_system", "can_pump_pwm", "target_liters_flow",
                "sections_open", "nozzles_on", "speed_center"],
-    "outputs": ["can_flow", "can_pressure", "pressure", "predicted_flow"],
+    "outputs": ["can_flow", "flow_lmin", "can_pressure", "pressure", "predicted_flow"],
 }
 
 def load_parser():
@@ -200,7 +208,8 @@ def main():
     ap.add_argument("--fill", default="zoh", choices=["zoh", "interp", "none"],
                     help="zoh = mantém o último valor (default); interp = interpola no tempo; none = sem preenchimento, só amostras que caem exatamente na grade")
     ap.add_argument("--model", default="quadro", choices=["quadro", "ag"])
-    ap.add_argument("--bitola", type=int, default=6000)
+    ap.add_argument("--bitola", type=int, default=None, help="default: cabeçalho do log")
+    ap.add_argument("--members", help="glob dos .txt dentro do zip (zip Jacto com vários logs)")
     ap.add_argument("--trim", action="store_true",
                     help="corta as bordas até a janela onde todo sinal tem valor "
                          "(suporte comum, o que identificação normalmente exige)")
@@ -213,7 +222,7 @@ def main():
     plot = importlib.util.spec_from_file_location("plot_log", HERE / "plot_log.py")
     plot_mod = importlib.util.module_from_spec(plot); plot.loader.exec_module(plot_mod)
 
-    cfg, raw, parts = parser.convert(a.log, bitola_mm=a.bitola)
+    cfg, raw, parts = parser.convert(a.log, bitola_mm=a.bitola, members=a.members)
     df, sources = build_dataset(parts, a.dt, a.fill, plot_mod.hex_to_bits, a.model)
 
     cortadas = 0
@@ -228,7 +237,10 @@ def main():
     dt_s = pd.Timedelta(a.dt).total_seconds()
     meta = {
         "log": str(a.log),
-        "machine": Path(a.log).parent.name,
+        "machine": raw.attrs["machine_code"] or Path(a.log).parent.name,
+        "machine_model": raw.attrs["machine_model"],
+        "files": raw.attrs["files"],
+        "flow_measured": next((c for c in FLOW_MEASURED if c in df and df[c].notna().any()), None),
         "t0_local": str(df.index[0]),  # hora do log, sem fuso — não é UTC
         "n_samples": int(len(df)),
         "dt_s": dt_s,
@@ -238,7 +250,7 @@ def main():
         "rows_trimmed": int(cortadas),
         "duration_s": float(df.t.iloc[-1]),
         "nozzle_model": a.model,
-        "bitola_mm": a.bitola,
+        "bitola_mm": raw.attrs["bitola_mm"],
         "columns": {c: {"source": sources.get(c, ("", c))[0],
                         "unit": UNITS.get(sources.get(c, ("", c))[1], "desconhecida"),
                         "n_valid": int(df[c].notna().sum()),

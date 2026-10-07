@@ -752,3 +752,50 @@ validation/
   linha. Não é o Cd do bico.
 - O log tem um único perfil de pressão (406 kPa, coerente com o perfil `410_KPa` do
   cabeçalho). O modelo **não** foi testado sob mudança de alvo — isso exige outro log.
+
+---
+
+# 12. Máquinas Jacto 3030/4530 (2026-10-07)
+
+Os 4 scripts processam JD e Jacto sem flag de máquina. Validado com
+`data_jacto/20260903.zip` (WQR20250023, `machineModel` 7, 104 `.txt`, 821 MB).
+A JD continua **idêntica** ao baseline (CSV com o mesmo md5 e `metrics.json` igual).
+
+```bash
+python3 parse_log_manual.py --selftest                                   # JD + Jacto
+python3 export_dataset.py data_jacto/20260903.zip --members '20260831-040413*' --trim
+python3 plot_log.py       data_jacto/20260903.zip --members '20260903-03[234]*'
+```
+
+`machineModel` 6, 7, 18 e 22 = "Jacto 3030/4530" (`section-controller/src/canMap.cpp`).
+No bucket: WQR20240009 e WQB20200001 (7), WQR20250010 (18).
+
+| Diferença | JD | Jacto | Tratamento |
+|---|---|---|---|
+| zip | 1 `.txt` na raiz | pasta com 1 `.txt` por trecho do dia | `read_txts` lê todos; `--members GLOB` recorta |
+| cabeçalho | `profiles` é dicionário | `"profiles": "{}"` (texto) | só mescla quando é dicionário |
+| bitola | 6000 | 3900 (4380 na WQR20240009) | lida de `# Bitola:`; `--bitola` sobrescreve |
+| pressão | `10FFF8E111` | `1AFFFFF9` ×6,89476 | as duas viram `can_pressure` |
+| vazão na barra | `can_flow` (flowmeter) | **nenhuma medida** | `flow_measured: null` no metadata |
+
+IDs Jacto adicionados (de `Update_Secrets.py`): `1AFFFFF9`, `1AFFFFED`, `1AFFFFFC`, `1AFFFFFF`,
+`1888888ADE`, `1888888A77`, `18888888AA`. Contexto do log (arquivos, máquina, modelo, bitola)
+fica em `df.attrs` e vai para o `dataset_meta.json`.
+
+## Achados
+
+- **`flow_lmin` (`18888888AA`) é o `predicted_flow`**, não um flowmeter: correlação 0,999 sem
+  atraso, e cai para cerca de 1,4 L/min quando os bicos fecham (o flowmeter JD mantinha 24,5).
+  `pump_flow`/`sent_machine_flow` são a vazão total da bomba, com o retorno incluído (correlação
+  0,07 com N·√P). Por isso o `validate_plant_model.py` **recusa a H2 na Jacto**; `--flow can_flow_lmin`
+  força a execução, e o REPORT avisa que o resultado é circular.
+- `Flowmeter` (campo `f` dos detalhes) existe no log Jacto, mas vem zerado.
+- **H1 (pressão):** `can_pressure` bate com o sensor Weedit (correlação 0,985). Em
+  `20260831-040413`, pulverizando, a pressão fica +6 % acima do alvo de 460 kPa, com RMSE de 74,5 kPa e
+  picos de até 1089 kPa (acima do limite de 1000 que o firmware aplica: são espúrios).
+- **Troca de alvo** (490→450→410 kPa) só aparece em `20260903-0322…0349`. Nos alvos 410/450 a
+  máquina estava quase sem bicos disparando e devagar; a pressão sobe para cerca de 600 kPa sem consumo.
+  Alvo e carga estão confundidos, então **o teste de troca de alvo continua em aberto**.
+- Unidades de `can_speed` e `pump_rpm` não estão documentadas.
+
+Os `*_explicado.md` foram atualizados para esta versão (2026-10-07).

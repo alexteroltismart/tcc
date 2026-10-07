@@ -39,6 +39,17 @@ plt.rcParams.update({
     "lines.linewidth": 1.2,
 })
 
+FLOW_DESC = {  # coluna -> (descrição curta, ressalva)
+    "can_flow": ("vazão real, flowmeter",
+                 "`can_flow` é o flowmeter do controlador de taxa de terceiros (John Deere neste\n"
+                 "   log), com filtro e cadência próprios: parte do atraso identificado em (e) é do\n"
+                 "   sensor, não da hidráulica."),
+    "can_flow_lmin": ("ESTIMATIVA da placa STM da bomba, Jacto",
+                      "**`can_flow_lmin` (CAN `18888888AA`) não é medição**: é o `predicted_flow` da placa\n"
+                      "   STM da bomba Jacto (correlação 0,999, sem atraso; zera junto com os bicos, sem a\n"
+                      "   inércia de um flowmeter). A H2 aqui é circular — vale só a H1 (pressão)."),
+}
+
 COLS = {"N": "nozzles_on", "S": "sections_on", "P": "can_pressure", "Q": "can_flow",
         "P_sp": "can_target_pressure", "Q_sp": "can_target_liters_flow"}
 
@@ -396,7 +407,7 @@ Regimes: {n_spray} amostras pulverizando (N > 1), {n_closed} com seções fechad
 | entrada | `can_target_pressure` (pressão alvo) | {Psp_min:.0f} – {Psp_max:.0f} kPa |
 | entrada | `can_target_liters_flow` (vazão alvo) | {Qsp_min:.1f} – {Qsp_max:.1f} L/min |
 | saída a validar | `can_pressure` (pressão real) | {P_min:.1f} – {P_max:.1f} kPa |
-| saída a validar | `can_flow` (vazão real, flowmeter) | {Q_min:.1f} – {Q_max:.1f} L/min |
+| saída a validar | `{qcol}` ({qdesc}) | {Q_min:.1f} – {Q_max:.1f} L/min |
 
 ## H1 — A pressão real segue a pressão alvo?
 
@@ -470,19 +481,16 @@ o alvo é calculado para cobertura total, enquanto a barra pulsa só onde há er
 ## Ressalvas
 
 1. `nozzles_on` é **contagem de bicos com o solenoide aberto na amostra**, não o ciclo
-   de trabalho médio. **Testado:** reexportando na cadência nativa (`--dt 50ms`) o
+   de trabalho médio. **Testado no log JD WQR20230004:** reexportando na cadência nativa (`--dt 50ms`) o
    resultado praticamente não muda (RMSE de validação 3,79 contra 3,72 L/min; R² 0,873
    contra 0,879). Ou seja, o resíduo instantâneo **não** é artefato de amostragem — os
    buracos de disparo duram ~250 ms, muito acima de 50 e de 100 ms. O que o explica é
    a filtragem do flowmeter e da linha.
-2. `can_flow` é o flowmeter do controlador de taxa de terceiros (John Deere neste
-   log), com filtro e cadência próprios: parte do atraso identificado em (e) é do
-   sensor, não da hidráulica.
+2. {flow_note}
 3. A pressão medida é a do sensor do Weedit, num ponto da linha; a queda de pressão
    até a ponta do bico não é medida. Isso desloca `k_n` (absorve o coeficiente de
    descarga e a perda de carga), então ele é um **coeficiente efetivo**, não o Cd do bico.
-4. O log inteiro tem um único perfil de pressão ({Psp_min:.0f} kPa) — o modelo não
-   foi testado sob mudança de alvo. Validar isso exige log com troca de perfil.
+4. {psp_note}
 """
 
 
@@ -494,6 +502,9 @@ def main():
     ap.add_argument("--split-mode", default="pulverizando", choices=["pulverizando", "tempo"],
                     help="'pulverizando' divide as amostras com bicos disparando (default); "
                          "'tempo' divide o log inteiro")
+    ap.add_argument("--flow", default="auto",
+                    help="coluna da vazão medida; 'auto' usa flow_measured do metadata "
+                         "(can_flow na JD, can_flow_lmin na Jacto)")
     a = ap.parse_args()
 
     outdir = Path(a.out); outdir.mkdir(parents=True, exist_ok=True)
@@ -501,6 +512,11 @@ def main():
     meta_path = Path(a.data).with_name("dataset_meta.json")
     meta_in = json.loads(meta_path.read_text()) if meta_path.exists() else {}
     dt = float(meta_in.get("dt_s", np.median(np.diff(df.t))))
+    COLS["Q"] = (meta_in.get("flow_measured", "can_flow") if a.flow == "auto" else a.flow)
+    if not COLS["Q"]:
+        raise SystemExit("o dataset não tem vazão medida na barra (Jacto: flow_lmin é estimativa).\n"
+                         "H2 seria circular; para rodar assim mesmo: --flow can_flow_lmin")
+    print("vazão medida:", COLS["Q"])
 
     falta = [c for c in COLS.values() if c not in df.columns]
     if falta:
@@ -612,6 +628,12 @@ def main():
         Psp_min=sig["P_sp"].min(), Psp_max=sig["P_sp"].max(),
         Qsp_min=sig["q_sp"].min(), Qsp_max=sig["q_sp"].max(),
         P_min=sig["P"].min(), P_max=sig["P"].max(), Q_min=sig["q"].min(), Q_max=sig["q"].max(),
+        qcol=COLS["Q"], qdesc=FLOW_DESC.get(COLS["Q"], ("vazão medida", ""))[0],
+        flow_note=FLOW_DESC.get(COLS["Q"], ("", f"`{COLS['Q']}`: origem do sinal não documentada."))[1],
+        psp_note=(f"O log inteiro tem um único perfil de pressão ({sig['P_sp'].min():.0f} kPa) — o modelo não\n"
+                  "   foi testado sob mudança de alvo. Validar isso exige log com troca de perfil."
+                  if sig["P_sp"].min() == sig["P_sp"].max() else
+                  f"A pressão alvo varia de {sig['P_sp'].min():.0f} a {sig['P_sp'].max():.0f} kPa neste log."),
         h1s_n=h1s["n"], h1s_bias=h1s["bias"], h1s_pct=h1s["erro_pct"],
         h1s_rmse=h1s["rmse"], h1s_max=h1s["max_abs"],
         h1c_n=h1["fechado"]["n"], h1c_bias=h1["fechado"]["bias"],

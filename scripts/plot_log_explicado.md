@@ -1,6 +1,6 @@
 # `plot_log.py` explicado linha por linha
 
-Referência do script de análise gráfica (`plot_log.py`, 307 linhas) que está nesta mesma pasta.
+Referência do script de análise gráfica (`plot_log.py`, 318 linhas) que está nesta mesma pasta.
 Os números de linha correspondem à versão atual do arquivo. Se editar o script, reconfira.
 
 Para o parse que alimenta este script, ver `weedit_log.md` (§8) e `parse_log_manual.py`.
@@ -24,15 +24,15 @@ lê exatamente isso.
 
 | Linha | Código | Por quê |
 |---|---|---|
-| 11 | `import argparse, importlib.util, re` | `argparse` = CLI; `importlib.util` = carregar o parser por caminho (linha 265); `re` = fatiar hex em `hex_to_bits` |
+| 11 | `import argparse, importlib.util, re` | `argparse` = CLI; `importlib.util` = carregar o parser por caminho (linha 275); `re` = fatiar hex em `hex_to_bits` |
 | 12 | `from pathlib import Path` | caminhos como objeto: `Path(...).stem`, `mkdir(parents=True)`, `/` para concatenar |
 | 14 | `import matplotlib` | precisa do módulo raiz **antes** de escolher o backend |
 | 15 | `matplotlib.use("Agg")` | backend sem tela. **Tem que vir antes do `pyplot`** — sem isso o script quebra em servidor/SSH sem X11 |
 | 16 | `import matplotlib.pyplot as plt` | API de figuras |
 | 17 | `import numpy as np` | matrizes dos heatmaps e `atleast_1d`/`median` |
 | 18 | `import pandas as pd` | séries temporais, `resample`, `DatetimeIndex` |
-| 19 | `import matplotlib.dates` | `date2num` na linha 201. Explícito de propósito: funcionava por importação transitiva do `pyplot`, que é um acidente, não um contrato |
-| 20 | `import matplotlib.ticker` | `FormatStrFormatter` nas linhas 240–241 |
+| 19 | `import matplotlib.dates` | `date2num` na linha 210. Explícito de propósito: funcionava por importação transitiva do `pyplot`, que é um acidente, não um contrato |
+| 20 | `import matplotlib.ticker` | `FormatStrFormatter` nas linhas 249–250 |
 | 21 | `from matplotlib.colors import LinearSegmentedColormap, ListedColormap` | as duas colormaps próprias (linhas 30 e 31) |
 
 `sys` foi removido — estava importado e nunca usado.
@@ -85,11 +85,11 @@ Em vez de repetir `color=`/`fontsize=` em cada chamada, o estilo entra uma vez n
 | `axes.edgecolor`, `grid.color`, `grid.linewidth: 0.6` | moldura e grid recessivos: o grid orienta, não compete com o dado |
 | `axes.labelcolor` (INK2), `axes.titlecolor` (INK) | hierarquia: título mais forte que rótulo de eixo |
 | `xtick.color`, `ytick.color` (MUTED) | números dos eixos são o texto menos importante |
-| `font.size: 8`, `axes.titlesize: 9`, `legend.fontsize: 7` | 9 painéis numa figura só cabem com tipo pequeno |
+| `font.size: 8`, `axes.titlesize: 9`, `legend.fontsize: 7` | até 13 painéis numa figura só cabem com tipo pequeno |
 | `legend.frameon: False` | caixa de legenda sem borda nem fundo — menos tinta, nada tapado |
 | `lines.linewidth: 1.2` | traço fino: com 4 séries sobrepostas, linha grossa esconde as de baixo |
 
-## Linhas 42–73 — `PANELS`: a especificação dos painéis
+## Linhas 42–82 — `PANELS`: a especificação dos painéis
 
 ```python
 PANELS = [
@@ -106,26 +106,33 @@ A regra que estrutura tudo: **um painel = uma unidade física**. Nada de eixo Y 
 
 | Linhas | Painel | Detalhe que importa |
 |---|---|---|
-| 43–46 | Velocidade | três fontes independentes (WDT `*SX0:98`, CAN da bomba, `V` dos detalhes) no mesmo eixo, porque compartilham a unidade bruta. Se as três não se sobrepõem no gráfico, o parse está errado |
-| 47–49 | Pressão | `fator=0.1` converte o `P` do log (0,1 kPa) para kPa e põe no mesmo eixo do `can_pressure`. É a checagem cruzada mais barata que existe |
-| 50–56 | Vazão | 6 séries em L/min: CAN, previsão da bomba, alvo, nominal, braglia e o flowmeter |
-| 57–60 | Taxa | `Usage_mlHa` com `fator=0.001` (ml/ha → L/ha) ao lado do `can_rate` e do alvo `R` |
-| 61–63 | Seções e bicos | contagens — `sections_open` (barra) e `current_nozzles_open` (bicos disparando) |
-| 64–66 | PWM | `%` |
-| 67 | Tensão | uma série só, `VOL/10` (o log guarda décimo de volt inteiro) |
-| 68–70 | Delta de velocidade | `wdt_deltac` e `speed_delta` (mesma grandeza: curva) |
-| 71 | Luminosidade | `Sunlight` ganhou painel próprio justamente porque **não** é a mesma unidade do delta |
+| 44–47 | Velocidade | três fontes independentes (WDT `*SX0:98`, CAN da bomba, `V` dos detalhes) no mesmo eixo, porque compartilham a unidade bruta. Se as três não se sobrepõem no gráfico, o parse está errado |
+| 48–50 | Pressão | `fator=0.1` converte o `P` do log (0,1 kPa) para kPa e põe no mesmo eixo do `can_pressure`. É a checagem cruzada mais barata que existe. Na Jacto o `can_pressure` vem do `1AFFFFF9`, com o mesmo nome |
+| 51–58 | Vazão | 7 séries em L/min: CAN (JD), `flow_lmin` (Jacto), previsão da bomba, alvo, nominal, braglia e o flowmeter. O `flow_lmin` fica **por baixo** do `predicted_flow` no gráfico porque é o mesmo sinal (correlação 0,999) — ver `weedit_log.md` §12 |
+| 59–61 | Vazão da bomba (Jacto) | `pump_flow` e `sent_machine_flow`. Mesma unidade do painel de cima, mas é outra grandeza: vazão total da bomba, com retorno, quase constante (~75 L/min) e sem relação com os bicos. Junto da vazão da barra, achataria as curvas que importam |
+| 62–65 | Taxa | `Usage_mlHa` com `fator=0.001` (ml/ha → L/ha) ao lado do `can_rate` e do alvo `R` |
+| 66–68 | Seções e bicos | contagens — `sections_open` (barra) e `current_nozzles_open` (bicos disparando) |
+| 69–71 | PWM | `%` |
+| 72–74 | PWM da bomba (Jacto) | `machine_pwm` e `pump_pwm` em valor **bruto**, não `%` — por isso não entram no painel de PWM |
+| 75 | Rotação do motor | `engine_rpm`, em rpm (~1600 em operação) |
+| 76 | Rotação da bomba | `pump_rpm` sozinho: a unidade não está documentada. Pôr no painel de rpm afirmaria que é rpm — e com escala 50–190 contra 1600 viraria uma reta no fundo |
+| 77 | Tensão | uma série só, `VOL/10` (o log guarda décimo de volt inteiro) |
+| 78–80 | Delta de velocidade | `wdt_deltac` e `speed_delta` (mesma grandeza: curva) |
+| 81 | Luminosidade | `Sunlight` ganhou painel próprio justamente porque **não** é a mesma unidade do delta |
 
-## Linhas 75–82 — `COUNTERS`
+Os painéis Jacto não precisam de flag de máquina: num log JD as séries não existem, o `get_series`
+devolve `None` e o painel inteiro some — o `overview.png` da JD sai com os mesmos painéis de antes.
+
+## Linhas 84–91 — `COUNTERS`
 
 ```python
 COUNTERS = [("details", "Area", "Área acumulada", 1), ...]
 ```
 
-Mesma tupla, sem título/unidade de painel: cada contador vira **seu próprio painel** (linha 98),
+Mesma tupla, sem título/unidade de painel: cada contador vira **seu próprio painel** (linha 108),
 porque área, distância, ml e segundos não compartilham eixo.
 
-## Linhas 85–93 — `get_series`: o filtro único de entrada
+## Linhas 94–102 — `get_series`: o filtro único de entrada
 
 ```python
 def get_series(parts, part, col, factor, step):
@@ -138,20 +145,20 @@ def get_series(parts, part, col, factor, step):
     return (s * factor).resample(step).mean().dropna()
 ```
 
-- **86–88**: `parts.get(part)` em vez de `parts[part]` — parte inexistente devolve `None` em vez de
+- **96–98**: `parts.get(part)` em vez de `parts[part]` — parte inexistente devolve `None` em vez de
   `KeyError`. Some a coluna também: máquina sem VAR simplesmente não tem `var`.
-- **89**: `to_numeric(errors="coerce")` transforma o que não é número em `NaN` (a coluna de detalhes
+- **99**: `to_numeric(errors="coerce")` transforma o que não é número em `NaN` (a coluna de detalhes
   é `object`: mistura número com string, como o nome do bico); o `dropna()` limpa.
-- **90–91**: **a decisão de projeto mais útil do script.** Série vazia ou 100% zero devolve `None` e
+- **100–101**: **a decisão de projeto mais útil do script.** Série vazia ou 100% zero devolve `None` e
   desaparece do gráfico — em vez de um traço reto em zero mentindo que "existe e está zerado".
-  Quem é descartado é reportado no fim (linhas 298–302), então some do gráfico, não do relatório.
-- **92**: escala e reamostra pela média em `step` (default `1s`). Reamostrar é o que mantém o PNG
+  Quem é descartado é reportado no fim (linhas 310–314), então some do gráfico, não do relatório.
+- **102**: escala e reamostra pela média em `step` (default `1s`). Reamostrar é o que mantém o PNG
   leve: um log de 100 ms virando 1 s corta 10× os pontos. `mean()` (não `first()`) porque a média é
   o resumo honesto de um intervalo.
 
-## Linhas 96–132 — `draw_panels`: monta uma figura de painéis empilhados
+## Linhas 105–141 — `draw_panels`: monta uma figura de painéis empilhados
 
-### 96–110: montar as linhas antes de desenhar
+### 105–120: montar as linhas antes de desenhar
 
 ```python
 rows = []
@@ -167,51 +174,53 @@ for entry in spec:
         series = [(s, lab) for s, lab in series if s is not None]
 ```
 
-- **97**: itera a especificação — os dois modos leem a mesma estrutura de tupla.
-- **98–99**: modo contador. `*entry[:2]` desempacota `(parte, coluna)` e `entry[3]` é o fator;
+- **107**: itera a especificação — os dois modos leem a mesma estrutura de tupla.
+- **108–109**: modo contador. `*entry[:2]` desempacota `(parte, coluna)` e `entry[3]` é o fator;
   o `entry[2]` (rótulo) não é argumento de `get_series`, é o nome do painel.
-- **101**: subtrai o primeiro valor. Um contador acumulado desde a fábrica (`Area = 15.602.975`)
+- **111**: subtrai o primeiro valor. Um contador acumulado desde a fábrica (`Area = 15.602.975`)
   plotado cru vira uma reta com um `+1.56e7` no canto; em Δ, você lê **quanto rendeu nesta janela**.
-- **102**: o título do painel é o rótulo do contador, e a unidade do eixo é "Δ desde o início".
-- **104–108**: modo painel. Resolve todas as séries do painel, **descarta as `None`** e só cria o
+- **112**: o título do painel é o rótulo do contador, e a unidade do eixo é "Δ desde o início".
+- **113–118**: modo painel. Resolve todas as séries do painel, **descarta as `None`** e só cria o
   painel se sobrou alguma. Painel de máquina que não manda nada simplesmente não aparece.
-- **109–110**: nenhuma linha ⇒ devolve `None` sem criar arquivo. Quem chama imprime `--` para essa figura.
+- **119–120**: nenhuma linha ⇒ devolve `None` sem criar arquivo. Quem chama imprime `--` para essa figura.
 
-### 112–131: desenhar
+### 122–141: desenhar
 
 ```python
 fig, axes = plt.subplots(len(rows), 1, figsize=(13, 1.9 * len(rows)), sharex=True)
 axes = np.atleast_1d(axes)
 ```
 
-- **112**: uma coluna, N linhas. Altura **proporcional** ao número de painéis (1,9" cada), então a
-  figura não fica achatada com 9 painéis nem esticada com 2. `sharex=True` é o ponto do exercício:
+- **122**: uma coluna, N linhas. Altura **proporcional** ao número de painéis (1,9" cada), então a
+  figura não fica achatada com 13 painéis nem esticada com 2. `sharex=True` é o ponto do exercício:
   todos os painéis dividem o eixo de tempo, e você lê o evento na vertical, em todas as grandezas.
-- **113**: `plt.subplots` devolve um `Axes` solto quando N=1 e um array quando N>1.
-  `atleast_1d` normaliza, e o `for` da linha 114 funciona nos dois casos.
-- **115–116**: uma linha por série; a cor vem de `SERIES[i % len]` — **índice pela posição na
+- **123**: `plt.subplots` devolve um `Axes` solto quando N=1 e um array quando N>1.
+  `atleast_1d` normaliza, e o `for` da linha 124 funciona nos dois casos.
+- **125–126**: uma linha por série; a cor vem de `SERIES[i % len]` — **índice pela posição na
   especificação**, não pelo valor. Ou seja, a cor segue a entidade: se uma série faltar noutro log,
   as demais não trocam de cor.
-- **117**: título. Com 2+ séries a legenda já nomeia tudo; com 1 série o nome dela entra no título
+- **127**: título. Com 2+ séries a legenda já nomeia tudo; com 1 série o nome dela entra no título
   (`"PWM — pwm_wdt_system"`) e nenhuma legenda é criada. O `series[0][1] == name` evita o
   `"Distância — Distância"` do modo contador, onde título e rótulo são a mesma coisa.
-- **118**: `pad=14` abre espaço para a legenda que vai ficar acima do painel; `pad=3` quando não tem.
-- **119–121**: rótulo do eixo Y = unidade; grid só horizontal (o eixo de tempo já é compartilhado);
+- **128**: `pad=14` abre espaço para a legenda que vai ficar acima do painel; `pad=3` quando não tem.
+- **129–131**: rótulo do eixo Y = unidade; grid só horizontal (o eixo de tempo já é compartilhado);
   molduras de cima e da direita removidas.
-- **122**: mata a notação de offset (`+1.5316e7`) que o matplotlib inventa em valor grande.
-- **123–125**: legenda **fora da área de dados** (`bbox_to_anchor=(0, 1.0)` = colada no topo, à
-  esquerda), em até 4 colunas. Foi assim que as colisões com a curva sumiram. `labelcolor=INK2`
-  mantém o texto em tinta, não na cor da série.
-- **126**: só o painel de baixo recebe "tempo" — com `sharex`, repetir em todos é ruído.
-- **127**: título da figura, alinhado à esquerda (`x=0.007, ha="left"`) para casar com os títulos dos painéis.
-- **128**: `tight_layout` com `rect` reservando 1,5% no topo para o suptitle.
-- **129–130**: salva a 130 dpi e **fecha a figura** — sem o `close`, gerar várias figuras vaza memória.
-- **131**: devolve o caminho, que é o sinal de "esta figura existe" para o `main`.
+- **132**: mata a notação de offset (`+1.5316e7`) que o matplotlib inventa em valor grande.
+- **133–135**: legenda **fora da área de dados** (`bbox_to_anchor=(0, 1.0)` = colada no topo, à
+  esquerda), **numa linha só** (`ncol=len(series)`). Foi assim que as colisões com a curva sumiram.
+  Era `min(len(series), 4)`: com 5 séries na Vazão da Jacto a legenda quebrava em duas linhas e
+  cobria o título do painel, porque o `pad=14` só reserva uma. `labelcolor=INK2` mantém o texto em
+  tinta, não na cor da série.
+- **136**: só o painel de baixo recebe "tempo" — com `sharex`, repetir em todos é ruído.
+- **137**: título da figura, alinhado à esquerda (`x=0.007, ha="left"`) para casar com os títulos dos painéis.
+- **138**: `tight_layout` com `rect` reservando 1,5% no topo para o suptitle.
+- **139–140**: salva a 130 dpi e **fecha a figura** — sem o `close`, gerar várias figuras vaza memória.
+- **141**: devolve o caminho, que é o sinal de "esta figura existe" para o `main`.
 
 > Bug que já morava aqui: a variável do laço chamava-se `title`, igual ao parâmetro da função, e
 > sobrescrevia o título da figura pelo do último painel. Hoje é `panel_title`.
 
-## Linhas 136–145 — `hex_to_bits`: a conversão que erra em silêncio
+## Linhas 145–154 — `hex_to_bits`: a conversão que erra em silêncio
 
 ```python
 if not isinstance(hex_str, str):
@@ -225,17 +234,17 @@ return "".join(f"{int(c, 16):04b}"[::-1] if c in "0123456789abcdefABCDEF" else "
 
 Reproduz as duas convenções de `log_converter_utils.py`:
 
-- **138–139**: `NaN` (float) entra aqui vindo do pandas; devolve string vazia em vez de explodir.
-- **141–142**: modo **AG** — agrupa de 2 em 2 (byte) e inverte os bits. Cuidado com `:05b`: é largura
+- **148–149**: `NaN` (float) entra aqui vindo do pandas; devolve string vazia em vez de explodir.
+- **150–152**: modo **AG** — agrupa de 2 em 2 (byte) e inverte os bits. Cuidado com `:05b`: é largura
   **mínima**, não corte. Byte ≥ 32 sai com 8 bits, não 5. Não é bug meu, é o comportamento do
   `weedit_ag_hex_to_bin` original — e é a razão de `matrix_bits` cortar pela mediana da largura.
-- **143–144**: modo **quadro** (default) — 4 bits por nibble, invertidos. Caractere não-hex vira
+- **153–154**: modo **quadro** (default) — 4 bits por nibble, invertidos. Caractere não-hex vira
   `"0000"`, espelhando o `parse_hex` do repo, que devolve 0 em `ValueError`.
 
 Usar o modelo errado **inverte a barra sem levantar erro**: o gráfico fica bonito e espelhado.
 É exatamente por isso que essa função tem `--selftest`.
 
-## Linhas 148–161 — `matrix_bytes`: CDD/VAR (1 byte por bico)
+## Linhas 157–170 — `matrix_bytes`: CDD/VAR (1 byte por bico)
 
 ```python
 s = s.dropna()
@@ -251,60 +260,60 @@ if not rows:
 return np.array(rows).T, pd.DatetimeIndex([ts for ts, _ in pairs])
 ```
 
-- **152–153**: **decimação**. Um PNG não mostra mais de ~1500 colunas de pixel úteis; `stride` pega
+- **161–162**: **decimação**. Um PNG não mostra mais de ~1500 colunas de pixel úteis; `stride` pega
   1 em cada N amostras para não gerar uma matriz gigante que o matplotlib reduziria de qualquer jeito.
-- **154**: largura em bicos = mediana do comprimento hex / 2 (2 chars por bico). Mediana, não `max`,
+- **163**: largura em bicos = mediana do comprimento hex / 2 (2 chars por bico). Mediana, não `max`,
   porque linha truncada existe.
-- **157–158**: emparelha timestamp e payload **antes** de filtrar, e só então monta as linhas.
+- **166–167**: emparelha timestamp e payload **antes** de filtrar, e só então monta as linhas.
   Era aqui o desalinhamento: filtrar os payloads e depois fatiar `s.index[:len(rows)]` assume que os
   descartados são os últimos — se o payload curto está no meio, o eixo de tempo escorrega.
-- **161**: `.T` transpõe — a matriz sai como (amostras × bicos) e o `imshow` quer (bicos × tempo),
+- **170**: `.T` transpõe — a matriz sai como (amostras × bicos) e o `imshow` quer (bicos × tempo),
   bico no eixo Y.
 
-## Linhas 164–176 — `matrix_bits`: WDT/SEC (1 bit por bico)
+## Linhas 173–185 — `matrix_bits`: WDT/SEC (1 bit por bico)
 
-Mesma estrutura, com duas diferenças: converte cada payload com `hex_to_bits` (linha 170) e a
-largura vem da **mediana do comprimento em bits** (171) — necessária por causa do `:05b` de largura
-variável do modo AG. O comentário da linha 172 marca que o cuidado com o emparelhamento é o mesmo.
+Mesma estrutura, com duas diferenças: converte cada payload com `hex_to_bits` (linha 179) e a
+largura vem da **mediana do comprimento em bits** (180) — necessária por causa do `:05b` de largura
+variável do modo AG. O comentário da linha 181 marca que o cuidado com o emparelhamento é o mesmo.
 
-## Linhas 179–220 — `draw_nozzles`: os heatmaps
+## Linhas 188–229 — `draw_nozzles`: os heatmaps
 
-- **180–194**: monta a lista de camadas. Cada uma é
+- **189–203**: monta a lista de camadas. Cada uma é
   `(nome, matriz, índice de tempo, colormap, limites)`. CDD e VAR usam a rampa sequencial e limites
   automáticos (`None`); WDT e SEC usam a colormap binária com limites fixos `(0, 1)` — sem fixar,
   um trecho todo fechado normalizaria 0 para "aberto".
-- **189–190**: as duas camadas binárias vêm de um laço porque só mudam a chave, a coluna e o rótulo.
-- **195–196**: nada para desenhar ⇒ `None`.
-- **198–199**: altura 2,4" por camada; `atleast_1d` como antes.
-- **201**: `date2num` converte os timestamps para o float que o matplotlib usa internamente.
+- **198–199**: as duas camadas binárias vêm de um laço porque só mudam a chave, a coluna e o rótulo.
+- **204–205**: nada para desenhar ⇒ `None`.
+- **207–208**: altura 2,4" por camada; `atleast_1d` como antes.
+- **210**: `date2num` converte os timestamps para o float que o matplotlib usa internamente.
   `imshow` não aceita eixo de datas direto — é preciso passar por `extent`.
-- **202–204**: `aspect="auto"` deixa a célula esticar (senão a matriz sai quadrada e ilegível);
+- **211–213**: `aspect="auto"` deixa a célula esticar (senão a matriz sai quadrada e ilegível);
   `origin="lower"` põe o bico 0 embaixo; `interpolation="nearest"` **não inventa meio-tom** entre
   bicos vizinhos; `extent` amarra a imagem ao intervalo real de tempo e à contagem de bicos.
-- **205**: avisa ao eixo X que aqueles floats são datas, e aí os ticks saem como hora.
-- **206**: o título já diz quantos bicos a matriz tem — é a conferência de configuração da máquina
-  mais direta que existe (60+60 = 120 no log de exemplo).
-- **208–211**: colorbar. Na camada binária, dois ticks rotulados `fechado`/`aberto` em vez da escala
+- **214**: avisa ao eixo X que aqueles floats são datas, e aí os ticks saem como hora.
+- **215**: o título já diz quantos bicos a matriz tem — é a conferência de configuração da máquina
+  mais direta que existe (60+60 = 120 no log JD de exemplo; 72+72 = 144 na Jacto WQR20250023).
+- **217–220**: colorbar. Na camada binária, dois ticks rotulados `fechado`/`aberto` em vez da escala
   `0,0–1,0`, que não significa nada num booleano.
-- **212–213**: contorno e ticks da colorbar nos tokens recessivos.
-- **214–219**: rótulo de tempo só embaixo, suptitle lembrando que **o lado esquerdo está invertido**
+- **221–222**: contorno e ticks da colorbar nos tokens recessivos.
+- **223–228**: rótulo de tempo só embaixo, suptitle lembrando que **o lado esquerdo está invertido**
   (é como o pipeline monta a barra), layout, salva, fecha.
 
-## Linhas 223–247 — `draw_gps`: o trajeto
+## Linhas 232–256 — `draw_gps`: o trajeto
 
-- **224–226**: sem CAN ou sem coluna de latitude, não há trajeto. Máquina cujo GPS chega por serial
+- **233–235**: sem CAN ou sem coluna de latitude, não há trajeto. Máquina cujo GPS chega por serial
   (NovAtel/NMEA) não cai aqui — está documentado em `weedit_log.md` §5.
-- **227–228**: descarta o par (0,0) — o "null island" que aparece quando o payload é inválido. O
+- **236–237**: descarta o par (0,0) — o "null island" que aparece quando o payload é inválido. O
   limiar `0.001` cobre também quase-zero de arredondamento.
-- **231**: cor = **minutos desde o início**, não índice: assim uma parada aparece como aglomerado de
+- **240**: cor = **minutos desde o início**, não índice: assim uma parada aparece como aglomerado de
   cor parada, e você lê a direção do percurso.
-- **233**: `scatter` com `s=3, linewidths=0` — ponto pequeno, sem borda, para 3 mil pontos não virarem
+- **242**: `scatter` com `s=3, linewidths=0` — ponto pequeno, sem borda, para 3 mil pontos não virarem
   um borrão. A cor usa a rampa sequencial (tempo é magnitude).
-- **234–236**: colorbar rotulada, nos tokens recessivos.
-- **239–241**: mata a notação `-5.397e1` e força 4 casas — coordenada tem que ser legível como número.
-- **243**: `aspect="equal"` — sem isso o traçado sai distorcido e uma curva parece uma reta.
+- **243–245**: colorbar rotulada, nos tokens recessivos.
+- **248–250**: mata a notação `-5.397e1` e força 4 casas — coordenada tem que ser legível como número.
+- **252**: `aspect="equal"` — sem isso o traçado sai distorcido e uma curva parece uma reta.
 
-## Linhas 250–262 — `selftest`
+## Linhas 259–271 — `selftest`
 
 ```python
 assert hex_to_bits("F0", "quadro") == "11110000"
@@ -321,7 +330,7 @@ Sete `assert` cobrindo a única lógica do script que erra **sem sintoma visíve
 os dois casos AG fixam a largura variável do `:05b`; os dois últimos fixam a tolerância a lixo
 (`ZZ` → zeros, `NaN` → vazio). `python3 plot_log.py --selftest` roda em milissegundos, sem log nenhum.
 
-## Linhas 265–269 — `load_parser`
+## Linhas 274–278 — `load_parser`
 
 ```python
 spec = importlib.util.spec_from_file_location("parse_log_manual", HERE / "parse_log_manual.py")
@@ -335,38 +344,47 @@ normal depende de o diretório estar no `sys.path`, o que só é verdade se voc�
 dentro da pasta. Com `HERE`, funciona de qualquer cwd — e é o mesmo mecanismo que a §8 usa no notebook.
 Custo: 4 linhas em vez de 1. Benefício: nenhuma cópia da lógica de parse aqui dentro.
 
-## Linhas 272–303 — `main`
+## Linhas 281–314 — `main`
 
 ```python
 ap.add_argument("log", nargs="?", default=DEFAULT_LOG)
 ap.add_argument("--out", default="plots")
 ap.add_argument("--step", default="1s", help="reamostragem dos painéis (default 1s)")
 ap.add_argument("--model", default="quadro", choices=["quadro", "ag"])
-ap.add_argument("--bitola", type=int, default=6000)
+ap.add_argument("--bitola", type=int, default=None, help="default: cabeçalho do log")
+ap.add_argument("--members", help="glob dos .txt dentro do zip (zip Jacto com vários logs)")
 ap.add_argument("--selftest", action="store_true", help="checa a ordem de bits e sai")
 ```
 
-- **274**: `nargs="?"` = argumento posicional opcional, então `python3 plot_log.py` sozinho funciona.
-- **275**: pasta de saída relativa por default (`./plots`).
-- **276**: `--step` é string porque vai direto para o `resample` do pandas (`"200ms"`, `"1s"`, `"5s"`).
-- **277**: `choices` no `--model` faz o argparse recusar valor inválido — melhor errar no CLI do que
+- **283**: `nargs="?"` = argumento posicional opcional, então `python3 plot_log.py` sozinho funciona.
+- **284**: pasta de saída relativa por default (`./plots`).
+- **285**: `--step` é string porque vai direto para o `resample` do pandas (`"200ms"`, `"1s"`, `"5s"`).
+- **286**: `choices` no `--model` faz o argparse recusar valor inválido — melhor errar no CLI do que
   gerar um heatmap espelhado.
-- **278**: `--bitola` só afeta `wdt_deltac` (é divisor na fórmula do parser), mas precisa estar aqui
-  porque é parâmetro de máquina, não do gráfico.
-- **281–282**: `--selftest` sai antes de tocar em qualquer log — dá para rodar sem dados na máquina.
-- **284**: cria a pasta de saída (`parents=True, exist_ok=True`: não reclama se já existe).
-- **285**: chama o parser. Só aqui o log é lido, uma vez, e os DataFrames são reaproveitados pelas 4 figuras.
-- **286**: imprime a janela real do log. É a primeira coisa a conferir: os logs de exemplo têm
-  **2 e 5,5 minutos**, não um dia.
-- **288–294**: as quatro figuras, na ordem. O `Path(a.log).stem` põe o nome do log no título, então o
-  PNG não fica anônimo depois de sair da pasta.
-- **295–296**: relatório: `ok` com o caminho, ou `--  (sem dados)` quando a função devolveu `None`.
-- **298–302**: recalcula quais séries pedidas não existem e lista. É a linha que já mostrou, sem
+- **287**: `--bitola` só afeta `wdt_deltac` (é divisor na fórmula do parser). Default `None`: o
+  parser lê a linha `# Bitola:` do cabeçalho (6000 na JD, 3900 na Jacto WQR20250023) e só cai em
+  6000 se ela não existir. Passar o valor sobrescreve o cabeçalho.
+- **288**: `--members` é um glob sobre o nome dos `.txt` dentro do zip. Zip JD tem um `.txt` só e
+  ignora a opção; o zip Jacto tem um dia inteiro (104 arquivos, 821 MB) e precisa do recorte
+  (`--members '20260831-040413*'`), senão carrega tudo em memória.
+- **292–293**: `--selftest` sai antes de tocar em qualquer log — dá para rodar sem dados na máquina.
+- **295**: cria a pasta de saída (`parents=True, exist_ok=True`: não reclama se já existe).
+- **296**: chama o parser. Só aqui o log é lido, uma vez, e os DataFrames são reaproveitados pelas 4 figuras.
+- **297**: nome que vai nos títulos: `machine_code` do cabeçalho (vem em `df.attrs`) + nome do
+  arquivo. O `filter(None, ...)` descarta o código quando o log não tem cabeçalho. No zip Jacto o
+  `stem` é o do zip (`20260903`), não o do `.txt` — por isso o código da máquina faz falta ali.
+- **298**: imprime quantos `.txt` entraram, a máquina e a janela real do log. É a primeira coisa a
+  conferir: os logs JD de exemplo têm **2 e 5,5 minutos**; um `.txt` Jacto, uns 13.
+- **300–306**: as quatro figuras, na ordem, com o `name` da linha 297 no título — o PNG não fica
+  anônimo depois de sair da pasta.
+- **307–308**: relatório: `ok` com o caminho, ou `--  (sem dados)` quando a função devolveu `None`.
+- **310–314**: recalcula quais séries pedidas não existem e lista. É a linha que já mostrou, sem
   precisar abrir o PNG, que a Horsch Leeb do `WQR20250011` não manda `can_flow`/`can_rate` —
   exatamente o cenário de "Common Issues" do `CLAUDE.md` do repo. Recomputar `get_series` aqui é
-  trabalho repetido; num log de minutos é irrelevante e mantém a função pura.
+  trabalho repetido; num log de minutos é irrelevante e mantém a função pura. Num log JD a lista
+  agora inclui também as séries Jacto (`flow_lmin`, `pump_flow`, `engine_rpm`…) — é esperado.
 
-## Linhas 306–307 — guarda de execução
+## Linhas 317–318 — guarda de execução
 
 ```python
 if __name__ == "__main__":

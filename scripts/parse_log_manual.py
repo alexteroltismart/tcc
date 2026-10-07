@@ -1,12 +1,24 @@
 """Converte manualmente um log Weedit (.zip) em DataFrames. Só stdlib + pandas."""
-import json, re, struct, zipfile
+import fnmatch, json, re, struct, zipfile
+from pathlib import Path
 import pandas as pd
 
 # ---------- 1. abrir o zip ----------
-def read_txt(zip_path):
-    with zipfile.ZipFile(zip_path) as z:
-        name = z.namelist()[0]
-        return name, z.read(name).decode("utf-8", errors="replace")
+def read_txts(path, members=None):
+    """[(nome, texto)] de cada .txt: zip de log único (JD), zip com pastas e vários .txt
+    (Jacto, um dia inteiro) ou um .txt solto. `members` é um glob sobre o nome."""
+    if str(path).endswith(".txt"):
+        with open(path, "rb") as fh:
+            yield str(path), fh.read().decode("utf-8", errors="replace")
+            return
+    with zipfile.ZipFile(path) as z:
+        names = sorted(n for n in z.namelist() if n.endswith(".txt"))
+        if members:
+            names = [n for n in names if fnmatch.fnmatch(n.split("/")[-1], members)]
+        if not names:
+            raise ValueError(f"nenhum .txt em {path}" + (f" casando {members!r}" if members else ""))
+        for n in names:                     # um por vez: o dia Jacto tem ~800 MB de texto
+            yield n, z.read(n).decode("utf-8", errors="replace")
 
 # ---------- 2. cabeçalho ----------
 def extract_header(text):
@@ -15,14 +27,18 @@ def extract_header(text):
         return None
     cleaned = re.sub(r"#", "", m.group(1)).strip().replace("\r", "")
     cfg = json.loads(cleaned)
-    if "profiles" in cfg:
-        profiles = cfg.pop("profiles", {})
+    profiles = cfg.pop("profiles", None)
+    if isinstance(profiles, dict):          # Jacto grava "profiles": "{}" (string)
         default = cfg.get("default", {})
         for _, pdata in profiles.items():
             for k, ov in pdata.items():
                 if isinstance(default.get(k), dict):
                     default[k].update(ov)
     return cfg.get("default", cfg)
+
+def header_bitola(text):
+    m = re.search(r"# Bitola:\s*(\d+)\s*mm", text)
+    return int(m.group(1)) if m else None
 
 # ---------- 3. tokenizar ----------
 def read_log(text, log_date):
@@ -151,6 +167,15 @@ CAN_DEFS = {
     "1333333302": ["<BHHHB", {1: "pwm_output", 2: "pressure_pwm", 3: "flow_pwm"}],
     "1333333304": ["<BHHBBB", {1: "nominal_pressure", 2: "target_pressure"}],
     "FEF3": ["<II", {0: "latitude", 1: "longitude"}],      # < 8 chars -> casa por PGN
+    # Jacto 3030/4530 (machineModel 6/7/18/22), de Update_Secrets.py.
+    # can_pressure repete o nome do JD de propósito: as duas nunca vêm no mesmo log.
+    "1AFFFFF9": ["<HHHH", {0: "can_speed", 2: "can_pressure"}],
+    "1AFFFFED": ["<BHHHB", {2: "pump_rpm"}],
+    "1AFFFFFC": ["<HHHH", {0: "pump_flow"}],
+    "1AFFFFFF": ["<HHHH", {0: "engine_rpm"}],
+    "1888888ADE": ["<BBBBHH", {4: "sent_machine_flow", 5: "stm_flow"}],
+    "1888888A77": ["<BBBBHH", {4: "machine_pwm", 5: "pump_pwm"}],
+    "18888888AA": ["<BHBBBBB", {1: "flow_lmin", 3: "braglia_mode"}],
 }
 CAN_RATIOS = {  # {prefix: {nome: (offset, ratio)}}
     "10FFF8E111": {"can_flow": (0, 0.1), "can_pressure": (0, 0.1)},
@@ -159,6 +184,10 @@ CAN_RATIOS = {  # {prefix: {nome: (offset, ratio)}}
     "18FF028102": {"can_flow": (0, 6e-05)},
     "18FE4926": {"can_flow": (0, 0.01), "can_accumulator": (0, 0.1)},
     "FEF3": {"latitude": (-210, 1e-07), "longitude": (-210, 1e-07)},
+    "1AFFFFF9": {"can_pressure": (0, 6.89476), "can_speed": (0, 2.7777777777777777)},
+    "1AFFFFFC": {"pump_flow": (0, 0.1)},
+    "1888888ADE": {"sent_machine_flow": (0, 0.1), "stm_flow": (0, 0.1)},
+    "18888888AA": {"flow_lmin": (0, 0.1)},
 }
 
 def build_idmsg(df):
@@ -193,12 +222,31 @@ def parse_can(df_can, time_interval="100ms"):
     limit = max(1, int(pd.Timedelta("60s") / pd.Timedelta(time_interval)))
     return df.ffill(limit=limit).bfill(limit=limit)
 
+def selftest():
+    """Um log de cada família de máquina; falha se a decodificação regredir."""
+    cfg, df, p = convert("/home/shared/data/Weedit/s3_bucket/WQR20230004/20260318-155931.zip")
+    assert df.attrs["bitola_mm"] == 6000 and "can_flow" in p["can"]
+    assert (len(p["cdd"].LEFT.iloc[0]) // 2, len(p["cdd"].RIGHT.iloc[0]) // 2) == (60, 60)
+    jacto = Path("/home/jupyter-alex/rep/claude_working/context_files/20260908/data_jacto/20260903.zip")
+    cfg, df, p = convert(jacto, members="20260831-040413*")
+    assert df.attrs["machine_model"] == 7 and df.attrs["bitola_mm"] == 3900
+    assert (len(p["cdd"].LEFT.iloc[0]) // 2, len(p["cdd"].RIGHT.iloc[0]) // 2) == (72, 72)
+    assert 100 < p["can"].can_pressure[p["can"].current_nozzles_open > 1].median() < 700
+    assert {"flow_lmin", "pump_flow", "engine_rpm"} <= set(p["can"].columns)
+    print("selftest ok (JD WQR20230004 + Jacto WQR20250023)")
+
 # ---------- 6. juntar ----------
-def convert(zip_path, log_date=None, bitola_mm=6000):
-    name, text = read_txt(zip_path)
-    log_date = log_date or name.split(".")[0].split("-")[0]
-    cfg = extract_header(text)
-    df = read_log(text, log_date)
+def convert(path, log_date=None, bitola_mm=None, members=None):
+    """bitola_mm=None -> cabeçalho do log (fallback 6000). Contexto em df.attrs."""
+    cfg, dfs, files = None, [], []
+    for name, text in read_txts(path, members):
+        files.append(name)
+        cfg = cfg or extract_header(text)
+        bitola_mm = bitola_mm or header_bitola(text)
+        # ponytail: tudo em memória; um dia Jacto inteiro (~800 MB) pede --members
+        dfs.append(read_log(text, log_date or name.split("/")[-1].split(".")[0].split("-")[0]))
+    df = pd.concat(dfs).sort_values("Time").reset_index(drop=True)
+    bitola_mm = bitola_mm or 6000
     df_can = build_idmsg(df)
     parts = {
         "sections": get_sections(df),
@@ -210,13 +258,24 @@ def convert(zip_path, log_date=None, bitola_mm=6000):
         "vol": get_voltage(df),
         "can": parse_can(df_can),
     }
+    mc = (cfg or {}).get("machineConfig", {})
+    df.attrs.update(files=files, bitola_mm=bitola_mm,
+                    machine_code=mc.get("machineCode"), machine_model=mc.get("machineModel"))
     return cfg, df, parts
 
 if __name__ == "__main__":
-    import sys
-    zp = sys.argv[1] if len(sys.argv) > 1 else "/home/shared/data/Weedit/s3_bucket/WQR20230004/20260318-155931.zip"
-    cfg, df, parts = convert(zp)
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("log", nargs="?", default="/home/shared/data/Weedit/s3_bucket/WQR20230004/20260318-155931.zip")
+    ap.add_argument("--members", help="glob dos .txt dentro do zip, ex.: '20260831-04*'")
+    ap.add_argument("--selftest", action="store_true", help="checa um log JD e um Jacto e sai")
+    a = ap.parse_args()
+    if a.selftest:
+        raise SystemExit(selftest())
+    cfg, df, parts = convert(a.log, members=a.members)
     print("header keys:", list(cfg)[:8] if cfg else None)
+    print("arquivos:", len(df.attrs["files"]), "| máquina:", df.attrs["machine_code"],
+          "modelo", df.attrs["machine_model"], "| bitola:", df.attrs["bitola_mm"], "mm")
     print("linhas de dados:", len(df), "| Sys:", df.Sys.value_counts().to_dict())
     for k, v in parts.items():
         print(f"{k:9} {'None' if v is None else str(v.shape)}", end="  ")
