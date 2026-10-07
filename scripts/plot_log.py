@@ -185,7 +185,17 @@ def matrix_bits(s, model, max_cols=1500):
     return np.array(rows).T, pd.DatetimeIndex([ts for ts, _ in pairs])
 
 
-def draw_nozzles(parts, model, out):
+def on_grid(m, idx, grid, tol):
+    """Coluna da amostra mais próxima de cada ponto da grade; NaN onde não há amostra a
+    menos de `tol` — assim o intervalo sem log aparece em branco, e não esticado."""
+    pos = np.clip(idx.searchsorted(grid), 1, len(idx) - 1)
+    near = np.where(grid - idx[pos - 1] < idx[pos] - grid, pos - 1, pos)
+    out = m[:, near].astype(float)
+    out[:, np.abs(idx[near] - grid) > tol] = np.nan
+    return out
+
+
+def draw_nozzles(parts, model, out, n_cols=1500):
     layers = []
     if parts.get("cdd") is not None:
         m, idx = matrix_bytes(parts["cdd"].CDD)
@@ -204,26 +214,53 @@ def draw_nozzles(parts, model, out):
     if not layers:
         return None
 
-    fig, axes = plt.subplots(len(layers), 1, figsize=(13, 2.4 * len(layers)))
-    axes = np.atleast_1d(axes)
-    for ax, (name, m, idx, cmap, lim) in zip(axes, layers):
-        x = matplotlib.dates.date2num(idx)
-        im = ax.imshow(m, aspect="auto", origin="lower", cmap=cmap, interpolation="nearest",
-                       extent=(x[0], x[-1], 0, m.shape[0]),
+    # eixo de tempo comum a todos os painéis, em tempo real
+    t0 = min(idx[0] for _, _, idx, _, _ in layers)
+    t1 = max(idx[-1] for _, _, idx, _, _ in layers)
+    grid = pd.date_range(t0, t1, periods=n_cols)
+    step = grid[1] - grid[0]
+    # linhas: no mínimo 0,5 s, senão o bin fica menor que a cadência de 100 ms do CAN e a
+    # curva sai tracejada; acima disso, NaN = intervalo sem log de verdade
+    step_s = f"{max(step.total_seconds(), 0.5):.3f}s"
+    lines = [(name, unit, [(get_series(parts, p, c, f, step_s), lab) for p, c, lab, f in items])
+             for name, unit, items in PANELS if name in ("Pressão", "Vazão")]
+    lines = [(n, u, [(s, lab) for s, lab in ser if s is not None]) for n, u, ser in lines]
+    lines = [row for row in lines if row[2]]
+
+    n = len(layers) + len(lines)
+    fig, axes = plt.subplots(n, 2, figsize=(13, 2.4 * n), sharex="col", layout="constrained",
+                             gridspec_kw={"width_ratios": [1, 0.012]})
+    axes = np.atleast_2d(axes)
+    x = matplotlib.dates.date2num(grid)
+    for (ax, cax), (name, m, idx, cmap, lim) in zip(axes, layers):
+        tol = max(step, 3 * pd.Series(idx).diff().median())
+        im = ax.imshow(on_grid(m, idx, grid, tol), aspect="auto", origin="lower", cmap=cmap,
+                       interpolation="nearest", extent=(x[0], x[-1], 0, m.shape[0]),
                        vmin=None if lim is None else lim[0], vmax=None if lim is None else lim[1])
-        ax.xaxis_date()
         ax.set_title(f"{name} — {m.shape[0]} bicos", loc="left", pad=3)
         ax.set_ylabel("bico")
-        cb = fig.colorbar(im, ax=ax, pad=0.01, fraction=0.02,
-                          ticks=[0, 1] if lim else None)
+        cb = fig.colorbar(im, cax=cax, ticks=[0, 1] if lim else None)
         if lim:
             cb.ax.set_yticklabels(["fechado", "aberto"])
         cb.outline.set_edgecolor(GRID)
         cb.ax.tick_params(colors=MUTED)
-    axes[-1].set_xlabel("tempo")
+    for (ax, cax), (name, unit, series) in zip(axes[len(layers):], lines):
+        cax.axis("off")
+        for i, (s, lab) in enumerate(series):
+            s = s.resample(step_s).mean()          # sem dropna: o intervalo sem log quebra a linha
+            ax.plot(matplotlib.dates.date2num(s.index), s.values, color=SERIES[i % len(SERIES)], label=lab)
+        ax.set_title(name, loc="left", pad=14 if len(series) > 1 else 3)
+        ax.set_ylabel(unit)
+        ax.grid(True, axis="y")
+        ax.spines[["top", "right"]].set_visible(False)
+        if len(series) > 1:
+            ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=len(series),
+                      labelcolor=INK2, handlelength=1.4, columnspacing=1.4, borderpad=0)
+    axes[0, 0].set_xlim(x[0], x[-1])
+    axes[-1, 0].xaxis_date()
+    axes[-1, 0].set_xlabel("tempo")
     fig.suptitle("Barra ao longo do tempo (esquerda invertida + direita, como no pipeline)",
                  x=0.007, ha="left", fontsize=11, color=INK)
-    fig.tight_layout(rect=(0, 0, 1, 0.985))
     fig.savefig(out, dpi=130)
     plt.close(fig)
     return out
