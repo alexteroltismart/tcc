@@ -175,10 +175,10 @@ text(s, 0.6, 2.45, 6.1, 4.45, [
     "controle por seções (grupos de bicos) ou bico a bico (cada bico sozinho)",
     "bico a bico em série: uma mangueira alimenta todos os bicos"], size=16)
 image(s, IMG / "sprayer.png", 6.95, 2.4, w=3.1, name="Pulverizador")
-caption(s, 6.95, 2.4 + 3.1 / 1.5 + 0.02, 3.1, "Fonte: Kuhn ([2025]).")
+caption(s, 6.95, 2.4 + 3.1 / 1.5 + 0.02, 3.1, "Figura 1: Pulverizador autopropelido de barras. Fonte: Kuhn ([2025]).")
 image(s, IMG / "fig02_secoes_bicos.png", 10.2, 2.4, w=2.55, name="Seções e bicos")
-caption(s, 10.2, 2.4 + 2.55 / 1.24 + 0.02, 2.6, "Seções × bico a bico. Fonte: adaptado de Rosa et al. (2019).")
-text(s, 6.95, 4.95, 5.8, 1.95, [
+caption(s, 10.2, 2.4 + 2.55 / 1.24 + 0.02, 2.6, "Figura 2: Controle por seções e bico a bico. Fonte: adaptado de Rosa, Terra e Drews Jr (2019).")
+text(s, 6.95, 5.15, 5.8, 1.8, [
     "a pressão define a vazão de cada bico e o tamanho da gota",
     "no bico a bico, cada troca muda a vazão que a barra pede → a pressão varia",
     "pressão errada → sobredose, subdose e deriva"], size=15)
@@ -194,7 +194,7 @@ text(s, 0.6, 2.5, 6.4, 4.4, [
     "vazão do bico q ∝ √P → muda a dose",
     "problema do trabalho: manter a pressão perto do valor desejado enquanto os bicos abrem e fecham"])
 image(s, IMG / "fig05_ensaio.png", 7.4, 2.45, h=4.3, name="Ensaio")
-caption(s, 7.4, 6.78, 5.4, "Ensaio de regulação pela válvula de alívio. Fonte: Rosa, Terra e Drews Jr (2019).")
+caption(s, 7.4, 6.78, 5.4, "Figura 10: Ensaio de regulação da pressão pela válvula de alívio. Fonte: Rosa, Terra e Drews Jr (2019).")
 notes(s, "Na bancada de referência, de 7 para 1 bico a pressão sobe 56%. No ensaio da figura, fechando três bicos ela vai de 4,0 para 5,8, e abrindo a válvula de alívio à mão ela volta. O problema do trabalho é fazer isso automaticamente.")
 
 # ================================================================ 4. objetivo e hipótese
@@ -219,16 +219,16 @@ text(s, 0.9 + w, 2.6, 12.7 - (0.9 + w), 4.3, [
     "cada etapa usa o resultado da anterior",
     "o modelo estático é usado no simulador e no projeto do controle",
     "tudo em Python (numpy e matplotlib)"], size=16)
-caption(s, 0.6, 2.45 + h + 0.02, w, "Fonte: TCC, Figura 4.")
+caption(s, 0.6, 2.45 + h + 0.02, w, "Figura 4: Etapas do trabalho. Fonte: elaborada pelo autor.")
 notes(s, "Ordem da apresentação: dados, modelo estático, modelo dinâmico, controle, simulação.")
 
 # ================================================================ 6. bancada
 s = next(cont)
 title(s, "Bancada de referência (Rosa, Terra e Drews Jr, 2019)")
 image(s, IMG / "overview barra.png", 0.6, 2.5, w=6.0, name="Foto bancada")
-caption(s, 0.6, 2.5 + 6.0 / 3.69 + 0.02, 6.0, "Barra de 5 m com 7 bicos. Fonte: Rosa, Terra e Drews Jr (2019).")
+caption(s, 0.6, 2.5 + 6.0 / 3.69 + 0.02, 6.0, "Figura 5: Visão geral da bancada de referência. Fonte: Rosa, Terra e Drews Jr (2019).")
 image(s, IMG / "fig04_fluxograma.png", 0.6, 4.55, w=4.2, name="Fluxograma bancada")
-caption(s, 0.6, 4.55 + 4.2 / 2.19 + 0.02, 4.8, "Fluxograma. Fonte: Rosa, Terra e Drews Jr (2019).")
+caption(s, 0.6, 4.55 + 4.2 / 2.19 + 0.02, 4.8, "Figura 9: Fluxograma de processo da bancada de referência. Fonte: Rosa, Terra e Drews Jr (2019).")
 text(s, 7.0, 2.45, 5.8, 1.5, [
     "bomba de pistão 14 L/min com válvula de mola",
     "7 bicos FanTip 0,2/110° com solenoide",
@@ -238,14 +238,14 @@ tabela(s, 7.0, 4.0, (0.8, 1.6, 1.5, 1.3), [
     ("7", "3,57", "5,60", "0,114"), ("6", "3,88", "5,07", "0,151"), ("5", "4,24", "4,40", "0,219"),
     ("4", "4,64", "3,60", "0,358"), ("3", "4,96", "2,80", "0,633"), ("2", "5,27", "2,00", "1,318"),
     ("1", "5,58", "1,00", "5,580")], size=12, alt=0.32, name="Tabela 1")
-caption(s, 7.0, 6.6, 5.4, "Válvula de alívio fechada. Fonte: Rosa, Terra e Drews Jr (2019), Tabela 1.")
+caption(s, 7.0, 6.6, 5.4, "Tabela 1: Pressão e vazão da barra em função do nº de bicos abertos (válvula de alívio fechada). Fonte: Rosa, Terra e Drews Jr (2019).")
 notes(s, "Os sete pontos da tabela foram usados para ajustar o modelo. Os autores ajustaram a válvula à mão.")
 
 # ================================================================ 7. modelo estático
 s = next(cont)
 title(s, "Modelo estático")
 image(s, BFIG / "fig06.png", 0.6, 2.4, w=6.6, name="Circuito equivalente")
-caption(s, 0.6, 2.4 + 6.6 / 6.32 + 0.02, 6.6, "Fonte: TCC, Figura 11.")
+caption(s, 0.6, 2.4 + 6.6 / 6.32 + 0.02, 6.6, "Figura 11: Circuito hidráulico equivalente proposto. Fonte: elaborada pelo autor.")
 text(s, 7.5, 2.4, 5.3, 0.4, ["~ bico (lei de orifício), K = 0,425:"], size=15)
 eq(s, "est0", "q = K\\sqrt{P}", 7.8, 2.8, size=20)
 text(s, 7.5, 3.35, 5.3, 0.4, ["~ fonte (bomba + válvula de mola), mínimos quadrados:"], size=15)
@@ -273,7 +273,7 @@ text(s, 0.6, 5.2, 6.4, 1.7, [
     "n bicos iguais em paralelo: resistência de 1 bico ÷ n²",
     "erro relativo máx.: 5,9% (R₁/n²) contra 18,5% (fórmula empírica, n = 7)"], size=16)
 image(s, FIGS / "a_resistencia_n.png", 7.3, 2.45, h=4.2, name="Gráfico resistência")
-caption(s, 7.3, 6.67, 5.4, "Fonte: TCC, Figura 17.")
+caption(s, 7.3, 6.67, 5.4, "Figura 17: Resistência equivalente em função do número de bicos abertos. Fonte: elaborada pelo autor com dados de Rosa, Terra e Drews Jr (2019).")
 notes(s, "Com n bicos em paralelo a resistência é a de um bico dividida por n ao quadrado. Um parâmetro físico em vez de quatro coeficientes; erro máximo 5,9% contra 18,5%.")
 
 # ================================================================ 9. validação
@@ -286,7 +286,7 @@ text(s, 0.6, 2.5, 4.6, 4.4, [
     "a válvula de alívio só baixa a pressão → Pref < 3,56 kgf/cm² (fonte com 7 bicos)",
     "adotado Pref = 3,5 kgf/cm²"])
 image(s, FIGS / "b_fonte_carga.png", 5.5, 2.45, h=4.2, name="Fonte e carga")
-caption(s, 5.5, 6.67, 6.5, "Curva da fonte × curvas de carga. Fonte: TCC, Figura 18.")
+caption(s, 5.5, 6.67, 6.5, "Figura 18: Curva da fonte e curvas de carga da barra. Fonte: elaborada pelo autor com dados de Rosa, Terra e Drews Jr (2019).")
 notes(s, "O modelo reproduziu os sete pontos com erro de até 0,7% na pressão e 2,3% na vazão. Como a válvula só alivia, a referência tem de ficar abaixo de 3,56; foi escolhido 3,5.")
 
 # ================================================================ 10. modelo dinâmico
@@ -302,7 +302,7 @@ text(s, 0.6, 5.35, 6.6, 1.6, [
     "τa e ωmax estimados",
     "simulação: Euler, passo de 1 ms"], size=16)
 image(s, IMG / "valv agulha.png", 8.0, 2.45, h=3.6, name="Válvula agulha")
-caption(s, 7.6, 6.1, 5.2, "Válvula agulha com servomotor. Fonte: Rosa, Terra e Drews Jr (2019).")
+caption(s, 7.6, 6.1, 5.2, "Figura 7: Válvula agulha de 1/4\" acionada por servomotor (válvula de alívio). Fonte: Rosa, Terra e Drews Jr (2019).")
 simbolos(s, "V: volume da linha · β: módulo de compressibilidade · αc: abertura comandada · τa: constante de tempo · ωmax: velocidade máxima da válvula")
 notes(s, "A pressão só demora por causa de V sobre beta; a mangueira é curta, então foi tratada como instantânea. A válvula é de primeira ordem com velocidade limitada. Os dois parâmetros são estimados.")
 
@@ -310,7 +310,7 @@ notes(s, "A pressão só demora por causa de V sobre beta; a mangueira é curta,
 s = next(cont)
 title(s, "Estratégia de controle")
 image(s, BFIG / "fig07.png", 0.6, 2.4, w=7.3, name="Diagrama de blocos")
-caption(s, 0.6, 2.4 + 7.3 / 2.32 + 0.02, 7.3, "Fonte: TCC, Figura 12.")
+caption(s, 0.6, 2.4 + 7.3 / 2.32 + 0.02, 7.3, "Figura 12: Diagrama de blocos do controle proposto. Fonte: elaborada pelo autor.")
 text(s, 0.6, 5.95, 7.3, 1.0, [
     "controlada: P · manipulada: α · perturbação: n(t)",
     "erro e = P − Pref (pressão alta → abrir a válvula)"], size=15)
@@ -352,11 +352,12 @@ tabela(s, 0.6, 2.85, (1.4, 2.6, 3.6), [
     ("Bicos", "Qbarra = nK√P", "0,795 ΔN + 0,795 ΔP"),
     ("Válvula", "Qv = Kv,max α √P", "6,55 Δα + 0,022 ΔP"),
     ("Fonte", "Qs(P)", "−1,645 ΔP")], size=14, alt=0.38, name="Tabela 3")
-text(s, 0.6, 4.55, 7.6, 0.4, ["~ somando no nó e isolando ΔP:"], size=16)
+caption(s, 0.6, 4.39, 7.6, "Tabela 3: Peças do equilíbrio do nó e suas versões linearizadas no ponto nominal. Fonte: elaborada pelo autor.")
+text(s, 0.6, 4.72, 7.6, 0.4, ["~ somando no nó e isolando ΔP:"], size=16)
 eq(s, "lin_soma", "-1{,}645\\,\\Delta P = 0{,}795\\,\\Delta N + 0{,}795\\,\\Delta P + 6{,}55\\,\\Delta\\alpha + 0{,}022\\,\\Delta P",
-   0.8, 5.0, size=17, max_w=7.0)
+   0.8, 5.12, size=17, max_w=7.0)
 eq(s, "lin_res", "\\Delta P = -\\frac{6{,}55}{2{,}462}\\,\\Delta\\alpha - \\frac{0{,}795}{2{,}462}\\,\\Delta N = -2{,}66\\,\\Delta\\alpha - 0{,}323\\,\\Delta N",
-   0.8, 5.55, size=18, max_w=7.0)
+   0.8, 5.65, size=18, max_w=7.0)
 eq(s, "lin_D", "D = \\frac{C}{2\\sqrt{P}} - \\frac{dQ_s}{dP} = 2{,}462", 8.6, 2.85, size=18, max_w=4.0)
 eq(s, "lin_kg", "K_g = -\\frac{K_{v,max}\\sqrt{P}}{D} = -2{,}66", 8.6, 3.65, size=18, max_w=4.0)
 eq(s, "lin_kn", "K_n = -\\frac{K\\sqrt{P}}{D} = -0{,}323", 8.6, 4.45, size=18, max_w=4.0)
@@ -370,7 +371,7 @@ notes(s, "Cada vazão vira a sua reta tangente (derivadas parciais). Somando no 
 s = next(cont)
 title(s, "Domínio de Laplace")
 w14, h14 = image(s, BFIG / "fig12_freq.png", 0.6, 2.4, w=7.4, name="Diagrama em Laplace")
-caption(s, 0.6, 2.4 + h14 + 0.02, 7.4, "Fonte: TCC, Figura 13.")
+caption(s, 0.6, 2.4 + h14 + 0.02, 7.4, "Figura 13: Diagrama de blocos da malha linearizada, no domínio de Laplace. Fonte: elaborada pelo autor.")
 text(s, 0.6, 2.4 + h14 + 0.45, 7.4, 1.4, [
     "referência fixa: a entrada é só ΔN",
     "saturação, limite de velocidade e anti-windup ficam só no simulador"], size=15)
@@ -389,7 +390,7 @@ notes(s, "A planta é estática (só ganhos). A válvula vira 1 sobre tau a s ma
 s = next(cont)
 title(s, "Malha fechada")
 w15, h15 = image(s, BFIG / "fig_malha_L.png", 0.6, 2.35, w=6.1, name="Malha L(s)")
-caption(s, 0.6, 2.35 + h15, 6.1, "Fonte: TCC, Figura 14.")
+caption(s, 0.6, 2.35 + h15, 6.1, "Figura 14: Malha com o ganho de malha L(s) e bloco equivalente. Fonte: elaborada pelo autor.")
 text(s, 7.0, 2.35, 5.8, 0.4, ["~ substituindo válvula e controlador na planta:"], size=15)
 eq(s, "m1", "\\Delta P = K_n\\Delta N + \\frac{K_g}{\\tau_a s + 1}\\left[G_c\\,\\Delta P + \\Delta A_{ff}\\right]", 7.2, 2.8, size=17, max_w=5.4)
 eq(s, "m2", "L(s) = \\frac{G_c(s)\\,|K_g|}{\\tau_a s + 1}", 7.2, 3.55, size=18, max_w=3.0)
@@ -412,7 +413,7 @@ eq(s, "kc", "K_c = \\frac{2\\zeta\\omega_n\\tau_a - 1}{|K_g|} = 0{,}827", 0.9, 4
 eq(s, "ti", "T_i = \\frac{K_c|K_g|}{\\tau_a\\,\\omega_n^2} = 0{,}084\\ \\mathrm{s}", 4.5, 4.95, size=18, max_w=3.3)
 eq(s, "pol", "s^2 + 16{,}0\\,s + 130{,}6 = 0 \\ \\Rightarrow\\ s = -8{,}0 \\pm j\\,8{,}2", 0.9, 5.85, size=19, max_w=6.0)
 w16, h16 = image(s, FIGS / "i_plano_s.png", 8.45, 2.38, h=4.15, name="Plano s")
-caption(s, 8.45, 2.38 + h16 + 0.02, 4.3, "Fonte: TCC, Figura 19.")
+caption(s, 8.45, 2.38 + h16 + 0.02, 4.3, "Figura 19: Polos e zeros da malha de pressão no plano s. Fonte: elaborada pelo autor.")
 simbolos(s, "ζ: amortecimento · ωn: frequência natural · ts: tempo de acomodação · o P usa o mesmo Kc")
 notes(s, "Escolhi zeta 0,7 e ts 0,5 s. Omega n = 11,43. Comparando termo a termo com a forma padrão: Kc = 0,827 e Ti = 0,084 s. Polos em −8 ± j8,2, no canto da região da especificação. O P usa o mesmo Kc.")
 
@@ -428,7 +429,7 @@ text(s, 0.6, 5.6, 6.6, 1.3, [
     "anti-windup: Ik não soma quando o comando está no limite de posição",
     "PI pede 0,827 × 0,323 / 0,2 = 1,34 s⁻¹, a válvula só anda 0,5 s⁻¹"], size=15)
 w17, h17 = image(s, FIGS / "g_funcao_transferencia.png", 7.5, 2.35, h=3.6, name="FT x simulador")
-caption(s, 7.5, 2.35 + h17, 3.7, "Fonte: TCC, Figura 20.")
+caption(s, 7.5, 2.35 + h17, 3.7, "Figura 20: Resposta a um bico fechando, com e sem o limite de velocidade da válvula. Fonte: elaborada pelo autor.")
 text(s, 11.2, 2.4, 1.6, 3.6, [
     "# sem limite:",
     "~ ts = 0,44 s",
@@ -455,7 +456,7 @@ text(s, x_sim + 0.2, 4.08, 12.75 - x_sim, 2.0, [
     "~ 4. pressão nova pela bissecção",
     "~ 5. guarda t, P, α e n"], size=14)
 text(s, x_sim, 6.0, 12.75 - x_sim, 0.4, ["saída: resultados.json e figuras; conferências automáticas; código no Apêndice A"], size=15)
-caption(s, x_sim, 6.55, 12.75 - x_sim, "Figura: laço da função simular. Fonte: TCC, Figura 16.")
+caption(s, x_sim, 6.55, 12.75 - x_sim, "Figura 16: Fluxograma da função simular. Fonte: elaborada pelo autor.")
 notes(s, "Tudo foi feito num único arquivo em Python, só com numpy e matplotlib, sem biblioteca de controle, para cada passo ficar visível no código. O programa ajusta o modelo estático, calcula os ganhos e a sintonia, roda o modelo linear e depois os cenários. A simulação em si é este laço: a cada milissegundo troca os bicos se for a hora, roda o controlador, move a válvula pelo método de Euler com os limites, calcula a pressão nova pela bissecção e guarda os valores. No fim, as séries no tempo dão as métricas e os gráficos.")
 
 # ================================================================ 18. cenários e métricas
@@ -480,7 +481,7 @@ TAB9 = [
 ]
 tabela(s, 0.6, 2.45, (1.0, 2.0, 2.2, 2.2), [("Cenário", "Configuração", "Fora da faixa", "IAE [kgf/cm²·s]")] + TAB9,
        size=13, alt=0.31, name="Tabela 9")
-caption(s, 0.6, 2.45 + 13 * 0.31 + 0.05, 7.4, "PI+FF = feedforward antecipado 0,2 s. Fonte: TCC, Tabela 9.")
+caption(s, 0.6, 2.45 + 13 * 0.31 + 0.05, 7.4, "Tabela 9: Desempenho por cenário e configuração (PI+FF = feedforward antecipado 0,2 s). Fonte: elaborada pelo autor.")
 text(s, 8.4, 2.5, 4.4, 4.4, [
     "P: melhora, mas deixa erro permanente",
     "PI: zera o erro (C1 100% na faixa)",
@@ -489,30 +490,31 @@ notes(s, "Sem controle, 69 a 91% do tempo fora. O P reduz mas deixa erro. O PI z
 
 # ================================================================ 20–22. um slide por cenário
 CENARIOS = [
-    ("C1", "c_C1.png", 21, "um bico por vez",
+    ("C1", "c_C1.png", 21, "um bico por vez", "Cenário C1: fechamento e reabertura dos bicos, um por vez",
      ["7 → 1 → 7, um bico a cada 2 s",
       "cada troca: salto de cerca de 9,5%, dentro da faixa",
       "P sai da faixa a partir do 4º bico fechado",
       "PI e PI+FF: 100% na faixa (IAE 0,78 e 0,73)"],
      "Cada troca dá um salto de cerca de 9,5%, dentro da faixa. O P sai da faixa a partir do quarto bico fechado. PI e PI+FF ficam 100% na faixa; o FF erra um pouco menos."),
-    ("C2", "c_C2.png", 22, "degraus de três bicos",
+    ("C2", "c_C2.png", 22, "degraus de três bicos", "Cenário C2: sequência do ensaio de Rosa, Terra e Drews Jr (2019)",
      ["7 → 4 em 2 s → 1 em 8 s",
       "P para em 3,81 e 4,12 (conta: 3,82 e 4,13)",
       "PI 6,8% fora, PI+FF 5,1%",
       "pico 4,54 com o PI, 4,36 com o PI+FF antecipado"],
      "O P para em 3,81 e 4,12, como a conta do erro previa. PI 6,8% fora, PI+FF 5,1%. O pico não some porque a pressão salta antes de a válvula andar; com a antecipação ele baixa para 4,36."),
-    ("C3", "d_C3.png", 23, "trocas aleatórias",
+    ("C3", "d_C3.png", 23, "trocas aleatórias", "Cenário C3: troca aleatória de bicos",
      ["66 trocas em 20 s",
       "PI 8,3% fora, PI+FF antecipado 4,4%",
       "sai da faixa quando várias trocas no mesmo sentido vêm seguidas",
       "FF sem antecipar: 9,5% (pior que o PI)"],
      "PI 8,3% fora, PI+FF antecipado 4,4%. As saídas acontecem quando várias trocas no mesmo sentido chegam seguidas. Sem antecipar, o FF ficava pior que o PI."),
 ]
-for cod, arq, nfig, sub, itens, nota in CENARIOS:
+EA = "Fonte: elaborada pelo autor."
+for cod, arq, nfig, sub, legenda, itens, nota in CENARIOS:
     s = next(cont)
     title(s, f"Cenário {cod}: {sub}")
     wfig, hfig = image(s, FIGS / arq, 0.6, 2.35, h=4.5, name=f"Resposta {cod}")
-    caption(s, 0.6, 2.35 + hfig + 0.02, wfig, f"Pressão, abertura e nº de bicos. Fonte: TCC, Figura {nfig}.")
+    caption(s, 0.6, 2.35 + hfig + 0.02, wfig, f"Figura {nfig}: {legenda}. {EA}")
     x0 = 0.6 + wfig + 0.35
     linhas = [("Config.", "Fora", "IAE")] + [(c, f, i) for (k, c, f, i) in TAB9 if k == cod]
     tabela(s, x0, 2.45, (12.75 - x0 - 2.6, 1.3, 1.3), linhas, size=13, alt=0.31, name=f"Tabela {cod}")
@@ -523,7 +525,7 @@ for cod, arq, nfig, sub, itens, nota in CENARIOS:
 s = next(cont)
 title(s, "Feedforward antecipado")
 w23, h23 = image(s, FIGS / "j_antecipacao.png", 0.6, 2.35, h=4.3, name="Antecipação")
-caption(s, 0.6, 2.35 + h23 + 0.02, w23, "Um bico fechando em t = 0,5 s. Fonte: TCC, Figura 24.")
+caption(s, 0.6, 2.35 + h23 + 0.02, w23, "Figura 24: Um bico fechando: PI, PI+FF sem antecipação e PI+FF antecipado em 0,2 s. Fonte: elaborada pelo autor.")
 text(s, 0.95 + w23, 2.45, 12.75 - (0.95 + w23), 4.4, [
     "IAE da troca: PI 0,071 · FF sem antecipar 0,083 · FF antecipado 0,064",
     "sem antecipar, PI e FF corrigem juntos e passam do ponto",
@@ -539,7 +541,7 @@ tabela(s, 0.6, 2.5, (3.0, 1.15, 1.15, 1.15, 1.15), [
     ("0,5 s⁻¹ (estimado)", "6,8%", "5,1%", "8,3%", "4,4%"),
     ("1,0 s⁻¹ (2×)", "3,4%", "2,7%", "0,4%", "0,1%"),
     ("2,0 s⁻¹ (4×)", "1,7%", "1,4%", "0,2%", "0,1%")], size=14, alt=0.45, name="Tabela velocidade")
-caption(s, 0.6, 4.35, 7.6, "Tempo fora da faixa. Fonte: TCC, seção 4.6.")
+caption(s, 0.6, 4.35, 7.6, "Tempo fora da faixa para cada velocidade máxima da válvula (seção 4.6). Fonte: elaborada pelo autor.")
 text(s, 8.4, 2.5, 4.4, 4.4, [
     "o salto acontece com qualquer controlador",
     "3 bicos: válvula anda 0,36 → ≈ 0,7 s de rampa",
