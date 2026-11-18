@@ -1,6 +1,6 @@
 """Monta a apresentação da banca (TCC v25, 20 min) sobre o modelo institucional da UNEMAT.
 Versão simples (18/11/2026): sem cartões coloridos nem números em destaque, texto em bullets curtos,
-equações em preto, tabelas em grade simples; slide "o que as FTs mostram" retirado (26 slides).
+equações em preto, tabelas em grade simples; slide "o que as FTs mostram" retirado; slide introdutório de pulverização (27 slides).
 Versão polida do mesmo dia: build_deck_v25a.py. Anteriores: build_deck_v20.py, build_deck_v19.py, build_deck_v15.py."""
 import copy
 from pathlib import Path
@@ -43,8 +43,8 @@ def duplica_fundo(src):
     return novo
 
 
-# 25 slides de conteúdo + capa = 26; o modelo tem 20 → 6 cópias
-slides += [duplica_fundo(slides[2]) for _ in range(6)]
+# 26 slides de conteúdo + capa = 27; o modelo tem 20 → 7 cópias
+slides += [duplica_fundo(slides[2]) for _ in range(7)]
 cont = iter(slides[1:])
 
 
@@ -164,17 +164,38 @@ text(s, 0.9, 4.55, 8.0, 1.9, ["~ Alex de Jesus Terolti", "~ Orientador: Prof. Dr
                               "~ Engenharia Elétrica – UNEMAT, Sinop", "~ TCC II"], size=18, name="Autor")
 notes(s, "Apresentar o nome, o orientador e o tema.")
 
-# ================================================================ 3. problema
+# ================================================================ 3. introdução
+s = next(cont)
+title(s, "Pulverização agrícola")
+text(s, 0.6, 2.45, 6.1, 4.45, [
+    "pulverizador de barras: tanque → bomba → mangueiras e válvulas → bicos",
+    "aplica defensivos e fertilizantes em forma de gotas",
+    "aplicação convencional: mesma dose na área toda, mas daninhas e pragas aparecem em manchas",
+    "pulverização localizada: aplica só onde precisa (sensores, imagens, mapas)",
+    "controle por seções (grupos de bicos) ou bico a bico (cada bico sozinho)",
+    "bico a bico em série: uma mangueira alimenta todos os bicos"], size=16)
+image(s, IMG / "sprayer.png", 6.95, 2.4, w=3.1, name="Pulverizador")
+caption(s, 6.95, 2.4 + 3.1 / 1.5 + 0.02, 3.1, "Fonte: Kuhn ([2025]).")
+image(s, IMG / "fig02_secoes_bicos.png", 10.2, 2.4, w=2.55, name="Seções e bicos")
+caption(s, 10.2, 2.4 + 2.55 / 1.24 + 0.02, 2.6, "Seções × bico a bico. Fonte: adaptado de Rosa et al. (2019).")
+text(s, 6.95, 4.95, 5.8, 1.95, [
+    "a pressão define a vazão de cada bico e o tamanho da gota",
+    "no bico a bico, cada troca muda a vazão que a barra pede → a pressão varia",
+    "pressão errada → sobredose, subdose e deriva"], size=15)
+notes(s, "O pulverizador de barras leva a calda do tanque, pela bomba e pelas mangueiras, até os bicos, que quebram o líquido em gotas. Na aplicação convencional a dose é a mesma na área toda, mas as daninhas e pragas aparecem em manchas. Na pulverização localizada só se aplica onde precisa, desligando seções ou bicos. O bico a bico é o mais preciso, mas, como uma mangueira alimenta todos os bicos, cada troca muda a vazão pedida e a pressão varia. E a pressão é que define quanto sai de cada bico e o tamanho da gota.")
+
+# ================================================================ 4. problema
 s = next(cont)
 title(s, "Problema")
 text(s, 0.6, 2.5, 6.4, 4.4, [
-    "pulverização localizada: cada bico abre e fecha sozinho",
-    "bicos alimentados em série pela mesma mangueira → quando bicos fecham, a pressão sobe",
+    "quando bicos fecham, sobra líquido na linha e a pressão sobe; quando abrem, cai",
     "bancada de Rosa, Terra e Drews Jr (2019): 3,57 → 5,58 kgf/cm² (+56%) de 7 para 1 bico",
-    "vazão do bico q ∝ √P → muda a dose e o tamanho de gota"])
+    "no ensaio: fechar 3 bicos leva 4,0 → 5,8; abrindo a válvula de alívio à mão, a pressão volta",
+    "vazão do bico q ∝ √P → muda a dose",
+    "problema do trabalho: manter a pressão perto do valor desejado enquanto os bicos abrem e fecham"])
 image(s, IMG / "fig05_ensaio.png", 7.4, 2.45, h=4.3, name="Ensaio")
 caption(s, 7.4, 6.78, 5.4, "Ensaio de regulação pela válvula de alívio. Fonte: Rosa, Terra e Drews Jr (2019).")
-notes(s, "Fechando três bicos a pressão sobe de 4,0 para 5,8; abrindo a válvula à mão ela volta. De 7 para 1 bico sobe 56%.")
+notes(s, "Na bancada de referência, de 7 para 1 bico a pressão sobe 56%. No ensaio da figura, fechando três bicos ela vai de 4,0 para 5,8, e abrindo a válvula de alívio à mão ela volta. O problema do trabalho é fazer isso automaticamente.")
 
 # ================================================================ 4. objetivo e hipótese
 s = next(cont)
