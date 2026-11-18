@@ -1,21 +1,21 @@
 # Roteiro da apresentação: 20 minutos
 
-Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (27 slides), que corresponde à versão 25 do TCC (`docs/25.pdf`). Todas as figuras, tabelas e equações dos slides são do próprio TCC. O roteiro anterior, de 15 minutos e da v20, está em `Roteiro_Apresentacao_15min_v20.md`.
+Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (26 slides, visual simples), que corresponde à versão 25 do TCC (`docs/25.pdf`). Todas as figuras, tabelas e equações dos slides são do próprio TCC. O roteiro anterior, de 15 minutos e da v20, está em `Roteiro_Apresentacao_15min_v20.md`.
 
 **O que mudou em relação ao roteiro de 15 min:**
-- A parte de controle passou de 4 para 8 slides (11 a 18), com a matemática passo a passo: abertura de equilíbrio, linearização, Laplace, ganho de malha, o que as funções de transferência mostram, alocação de polos e a forma discreta.
+- A parte de controle passou de 4 para 7 slides (11 a 17), com a matemática passo a passo: abertura de equilíbrio, linearização, Laplace, malha fechada, alocação de polos e a forma discreta.
 - Os números são os da v25: *feedforward* antecipado em 0,2 s, que agora é o melhor controlador (C3: 4,4% contra 8,3% do PI).
-- Há um slide novo sobre a antecipação (24, Figura 24).
+- Há um slide novo sobre a antecipação (23, Figura 24).
 - A tabela de resultados é a Tabela 9, só com tempo fora da faixa e IAE.
 
 **Tempo:**
-- O tempo previsto de fala é de **19 min**. Sobra 1 min de folga.
+- O tempo previsto de fala é de **18 min**. Sobram 2 min de folga.
 - O ritmo de referência é de cerca de 130 palavras por minuto.
 - Não é preciso decorar: use as falas como guia e diga com suas palavras. Nas contas, aponte a equação no slide enquanto fala.
 
 **Onde ganhar tempo:**
 - Se estiver atrasado, encurte os slides marcados com ⏩.
-- Não corte os slides 15 a 17 (malha, leitura das funções de transferência e polos): eles são o centro da parte matemática.
+- Não corte os slides 15 e 16 (malha fechada e polos): eles são o centro da parte matemática.
 
 ---
 
@@ -25,37 +25,36 @@ Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (27 sl
 |---|---|---|---|
 | 1 | Capa | 0:15 | 0:15 |
 | 2 | Título | 0:30 | 0:45 |
-| 3 | O problema | 0:45 | 1:30 |
+| 3 | Problema | 0:45 | 1:30 |
 | 4 | Objetivo e hipótese | 0:40 | 2:10 |
-| 5 | Roteiro ⏩ | 0:15 | 2:25 |
+| 5 | Etapas ⏩ | 0:15 | 2:25 |
 | 6 | Bancada de referência | 0:40 | 3:05 |
 | 7 | Modelo estático | 0:50 | 3:55 |
-| 8 | Modelo R₁/n² ⏩ | 0:35 | 4:30 |
-| 9 | Validação ⏩ | 0:30 | 5:00 |
-| 10 | Modelo dinâmico | 0:45 | 5:45 |
-| 11 | Estratégia de controle | 0:50 | 6:35 |
-| 12 | Abertura de equilíbrio (*feedforward*) | 0:55 | 7:30 |
-| 13 | Linearização | 1:10 | 8:40 |
-| 14 | Domínio de Laplace | 0:55 | 9:35 |
-| 15 | Ganho de malha e T_n | 1:05 | 10:40 |
-| 16 | O que as funções de transferência mostram | 1:05 | 11:45 |
-| 17 | Alocação de polos | 1:10 | 12:55 |
-| 18 | Forma discreta e conferência | 0:55 | 13:50 |
-| 19 | Cenários e métricas ⏩ | 0:20 | 14:10 |
-| 20 | Resultados: Tabela 9 | 0:35 | 14:45 |
-| 21 | Cenário C1 | 0:25 | 15:10 |
-| 22 | Cenário C2 | 0:35 | 15:45 |
-| 23 | Cenário C3 | 0:25 | 16:10 |
-| 24 | Por que antecipar | 0:45 | 16:55 |
-| 25 | Gargalo: velocidade da válvula | 0:30 | 17:25 |
-| 26 | Conclusões | 0:50 | 18:15 |
-| 27 | Trabalhos futuros e agradecimento | 0:30 | 18:45 |
+| 8 | Resistência R₁/n² ⏩ | 0:35 | 4:30 |
+| 9 | Validação ⏩ | 0:25 | 4:55 |
+| 10 | Modelo dinâmico | 0:40 | 5:35 |
+| 11 | Estratégia de controle | 0:50 | 6:25 |
+| 12 | Abertura de equilíbrio (*feedforward*) | 0:55 | 7:20 |
+| 13 | Linearização | 1:10 | 8:30 |
+| 14 | Domínio de Laplace | 0:55 | 9:25 |
+| 15 | Malha fechada | 1:25 | 10:50 |
+| 16 | Alocação de polos | 1:20 | 12:10 |
+| 17 | Forma discreta e conferência | 0:55 | 13:05 |
+| 18 | Cenários e métricas ⏩ | 0:20 | 13:25 |
+| 19 | Resultados | 0:35 | 14:00 |
+| 20 | Cenário C1 | 0:25 | 14:25 |
+| 21 | Cenário C2 | 0:35 | 15:00 |
+| 22 | Cenário C3 | 0:25 | 15:25 |
+| 23 | Feedforward antecipado | 0:45 | 16:10 |
+| 24 | Velocidade da válvula | 0:30 | 16:40 |
+| 25 | Conclusões | 0:50 | 17:30 |
+| 26 | Trabalhos futuros e agradecimento | 0:30 | 18:00 |
 
 **Pontos de controle do relógio:**
 - no slide 7, perto de **3:05**;
-- no slide 13, perto de **7:30**;
-- no slide 19, perto de **13:50**;
-- no slide 26, perto de **17:25**.
+- no slide 13, perto de **7:20**;
+- no slide 18, perto de **13:05**;
+- no slide 25, perto de **16:40**.
 
 Se estiver mais de 30 s atrasado num desses pontos, use os ⏩.
 
@@ -89,11 +88,11 @@ Se estiver mais de 30 s atrasado num desses pontos, use os ⏩.
 
 *Se atrasado: "A resistência da barra segue R₁ sobre n ao quadrado, com um parâmetro só e erro máximo de 5,9 por cento."*
 
-### Slide 9: Validação ⏩ (0:30)
+### Slide 9: Validação ⏩ (0:25)
 > O modelo reproduziu os sete pontos medidos com erro de até 0,7 por cento na pressão e 2,3 na vazão. E deu uma regra de projeto: a válvula de alívio só baixa a pressão, então a referência tem de ficar abaixo do que a fonte sustenta com sete bicos, 3,56. Foi adotado 3,5.
 
-### Slide 10: Modelo dinâmico (0:45)
-> A dinâmica tem duas partes. A pressão só demora a mudar por causa do termo V sobre beta; como a mangueira é curta e cheia, ela foi tratada como instantânea, e conferi com a mangueira modelada: diferença de no máximo 0,4 ponto percentual. A válvula é de primeira ordem, com tau a de 0,2 segundo, mas o motor não passa de 0,5 por segundo. Esses dois valores são estimados. A simulação avança de milissegundo em milissegundo pelo método de Euler.
+### Slide 10: Modelo dinâmico (0:40)
+> A dinâmica tem duas partes. A pressão só demora a mudar por causa do termo V sobre beta; como a mangueira é curta e cheia, ela foi tratada como instantânea. A válvula é de primeira ordem, com tau a de 0,2 segundo, mas o motor não passa de 0,5 por segundo. Esses dois valores são estimados. A simulação avança de milissegundo em milissegundo pelo método de Euler.
 
 ### Slide 11: Estratégia de controle (0:50)
 > Agora a parte de controle. A variável controlada é a pressão, a manipulada é a abertura da válvula, e o número de bicos é a perturbação. O erro é P menos P ref, ao contrário do usual, porque pressão alta pede abrir a válvula. Os três controladores saem de uma só equação, a 3.19: uma base, uma parcela proporcional ao erro e uma parcela proporcional ao erro acumulado. O P usa só a base fixa e o proporcional. O PI acrescenta a integral. No PI com *feedforward*, a base passa a acompanhar o número de bicos, olhando 0,2 segundo à frente. A seta tracejada é o anti-windup: a integral para de somar quando o comando bate no limite.
@@ -107,45 +106,42 @@ Se estiver mais de 30 s atrasado num desses pontos, use os ⏩.
 ### Slide 14: Domínio de Laplace (0:55)
 > Com as retas, a malha vai para Laplace. A planta é estática pela hipótese de pressão instantânea, então a transformada só carrega os ganhos. A válvula sem o limite de velocidade é de primeira ordem: tau a alfa ponto mais alfa igual ao comando vira 1 sobre tau a s mais 1, um polo em menos 5. O PI é K c vezes 1 mais 1 sobre T i s. O *feedforward* é menos K n sobre K g vezes delta N, mais 0,121 por bico fechado, que é o compensador menos G2 sobre Gp do Castrucci. No diagrama, o número de bicos entra por dois caminhos: direto na pressão e pelo *feedforward*. A referência é fixa, então a única entrada é delta N. A saturação e o limite de velocidade ficam só no simulador.
 
-### Slide 15: Ganho de malha e T_n (1:05)
-> Substituindo a válvula e o controlador na planta, delta P aparece dos dois lados. O produto dos blocos ao longo da volta, controlador vezes válvula vezes planta, é o ganho de malha L de s. Como K g é negativo, ele entra com sinal de menos: a realimentação é negativa. Passando para o lado esquerdo, fica delta P vezes 1 mais L igual ao efeito do bico. Então a resposta aos bicos é T n igual a K n sobre 1 mais L, que é a parte b da figura: o efeito de um bico fica dividido por 1 mais o ganho de malha. Tirando as frações, saem as três funções embaixo. Reparem no denominador do PI e do PI com *feedforward*: é o mesmo. Só o numerador muda.
+### Slide 15: Malha fechada (1:25)
+> Substituindo a válvula e o controlador na planta, delta P aparece dos dois lados. O produto dos blocos ao longo da volta, controlador vezes válvula vezes planta, é o ganho de malha L de s. Como K g é negativo, ele entra com sinal de menos: a realimentação é negativa. Passando para o lado esquerdo, fica delta P vezes 1 mais L igual ao efeito do bico. Então a resposta aos bicos é T n igual a K n sobre 1 mais L, que é a parte b da figura: o efeito de um bico fica dividido por 1 mais o ganho de malha. Tirando as frações, saem as três funções embaixo. Reparem no denominador do PI e do PI com *feedforward*: é o mesmo, então o *feedforward* não muda a estabilidade. E a antecipação usa um valor do futuro, então ela não cabe numa função de transferência comum: foi avaliada só no simulador.
 
-### Slide 16: O que as funções de transferência mostram (1:05)
-> Sem simular nada, essas funções já dizem quatro coisas. Primeira: pelo teorema do valor final, o P deixa 0,323 sobre 3,2, ou 0,101 kgf/cm² de erro por bico. É a fração 1 sobre 1 mais K da tabela 3.4 do Castrucci. Segunda: o PI tem um s no numerador, então o valor final é zero. Terceira: pelo teorema do valor inicial, fazendo s tender a infinito, logo depois da troca a pressão muda K n delta N com qualquer controlador. Ou seja, o salto não é sobressinal: é o próprio bico, porque a correção ainda não passou pela válvula. O controlador só define a volta. Quarta: o *feedforward* sem antecipação deixa um resíduo K n tau a s sobre tau a s mais 1, que some em regime mas não no instante, e como o denominador é o mesmo, ele não muda a estabilidade. A antecipação usa um valor do futuro, então não cabe numa função de transferência comum e foi avaliada só no simulador.
-
-### Slide 17: Alocação de polos (1:10)
+### Slide 16: Alocação de polos (1:20)
 > A sintonia é feita de trás para frente. Primeiro escolhi a resposta: amortecimento 0,7, perto do que acomoda mais depressa, e acomodação em 0,5 segundo. Pela fórmula do Ogata, t s igual a 4 sobre zeta omega n, a frequência natural fica 11,43. Depois, o denominador comum, dividido por tau a T i, é comparado termo a termo com a forma padrão s ao quadrado mais 2 zeta omega n s mais omega n ao quadrado. O termo em s dá K c igual a 0,827, e o termo independente dá T i igual a 0,084 segundo. A equação fica s ao quadrado mais 16 s mais 130,6, com polos em menos 8 mais ou menos j 8,2. Na figura, a região sombreada é onde a especificação é atendida: à esquerda de menos 8 e dentro do ângulo de 45,6 graus. Os polos ficam no canto. O polo do P está em menos 16 e o da válvula sozinha em menos 5. Os círculos são os zeros, que não mexem nos polos mas mudam a forma da curva. O P usa o mesmo K c, para a comparação mostrar só o efeito da integral.
 
 *Se atrasado: corte a leitura da figura e diga só "os polos ficam exatamente no canto da região pedida".*
 
-### Slide 18: Forma discreta e conferência (0:55)
+### Slide 17: Forma discreta e conferência (0:55)
 > No programa, a integral vira uma soma de retângulos a cada milissegundo, e o comando é a Equação 3.21. Um exemplo com números: pressão em 3,6, erro de 0,1; a válvula recebe ordem de abrir de 2,3 para 10,7 por cento. Para conferir o projeto, a Figura 20 mostra um bico fechando no simulador completo. Sem o limite de velocidade, o PI acomoda em 0,44 segundo, dentro dos 0,5 pedidos, e fica a menos de 0,01 da função de transferência. Com o limite real, a conta embaixo mostra o problema: o controlador pede 1,34 por segundo, quase três vezes o que a válvula dá. Ela anda em rampa e a acomodação vai para 0,63. O modelo linear acerta os polos, mas quem define o tempo real é a válvula.
 
-### Slide 19: Cenários e métricas ⏩ (0:20)
+### Slide 18: Cenários e métricas ⏩ (0:20)
 > Simulei três cenários: C1, um bico de cada vez; C2, degraus de três bicos, como no ensaio; e C3, trocas aleatórias rápidas. As métricas são o tempo fora da faixa de 10 por cento e o IAE, a área do erro.
 
-### Slide 20: Resultados: Tabela 9 (0:35)
-> Esta é a Tabela 9. Sem controle, a pressão fica de 69 a 91 por cento do tempo fora da faixa. O P reduz para 38 a 50, mas deixa o erro que o valor final previa. O PI zera o erro. E o PI com *feedforward* antecipado é o melhor nos três cenários; no C3, cai quase pela metade, de 8,3 para 4,4 por cento.
+### Slide 19: Resultados (0:35)
+> Esta é a Tabela 9. Sem controle, a pressão fica de 69 a 91 por cento do tempo fora da faixa. O P reduz para 38 a 50, mas deixa erro permanente. O PI zera o erro. E o PI com *feedforward* antecipado é o melhor nos três cenários; no C3, cai quase pela metade, de 8,3 para 4,4 por cento.
 
-### Slide 21: Cenário C1 (0:25)
-> Os gráficos têm a pressão em cima, com a faixa em verde, a abertura no meio e o número de bicos embaixo. Cada troca dá um salto de 9,5 por cento, que é o K n do valor inicial, dentro da faixa. O P sai da faixa a partir do quarto bico fechado. O PI e o PI com *feedforward* ficam 100 por cento na faixa.
+### Slide 20: Cenário C1 (0:25)
+> Os gráficos têm a pressão em cima, com a faixa em verde, a abertura no meio e o número de bicos embaixo. Cada troca dá um salto de 9,5 por cento, dentro da faixa. O P sai da faixa a partir do quarto bico fechado. O PI e o PI com *feedforward* ficam 100 por cento na faixa.
 
-### Slide 22: Cenário C2 (0:35)
+### Slide 21: Cenário C2 (0:35)
 > O C2 repete o ensaio: três bicos fecham em 2 segundos e mais três em 8. O P para em 3,81 e 4,12, praticamente o que a conta d sobre 1 mais K c K g previa. O PI fica 6,8 por cento fora, e o *feedforward* antecipado 5,1. O pico não some: a pressão salta para 4,54 antes de a válvula se mover. Com a antecipação, o pico baixa para 4,36.
 
-### Slide 23: Cenário C3 (0:25)
+### Slide 22: Cenário C3 (0:25)
 > O C3 imita a aplicação localizada: 66 trocas em 20 segundos. O PI fica 8,3 por cento fora, quando várias trocas no mesmo sentido chegam seguidas. O *feedforward* antecipado fica com 4,4. Sem antecipação, o mesmo *feedforward* ficava pior que o PI, 9,5.
 
-### Slide 24: Por que antecipar (0:45)
+### Slide 23: Feedforward antecipado (0:45)
 > Este gráfico mostra por quê. Um bico fecha em meio segundo. Sem antecipar, o *feedforward* não ajuda: o PI, lendo em tempo real, já manda abrir no mesmo instante, e as duas correções somadas passam do ponto. É o s ao quadrado no numerador da Equação 3.28. Antecipando 0,2 segundo, a válvula começa a abrir antes; a pressão cai um pouco, para 3,44, ainda dentro da faixa, e o salto vai a 3,79 em vez de 3,83. O IAE dessa troca foi 0,064, contra 0,071 do PI. No C3, esse ganho se repete em cada troca.
 
-### Slide 25: Gargalo: velocidade da válvula (0:30)
+### Slide 24: Velocidade da válvula (0:30)
 > O que mais pesa ainda é a velocidade da válvula. O salto acontece com qualquer controlador, e a volta depende da rampa: para três bicos são 0,36 de abertura, cerca de 0,7 segundo. Com a válvula duas vezes mais rápida, o C3 cai para 0,4 por cento com o PI e 0,1 com o *feedforward* antecipado.
 
-### Slide 26: Conclusões (0:50)
+### Slide 25: Conclusões (0:50)
 > Concluindo: um modelo com uma constante de bico e uma curva de fonte reproduziu a bancada. Como o ganho da planta não depende do número de bicos, uma única sintonia por alocação de polos serve para todos os casos. O PI zera o erro, e o *feedforward* antecipado em 0,2 segundo foi o melhor dos três. Mas três bicos fechando juntos ainda tiram a pressão da faixa por cerca de meio segundo. A hipótese foi confirmada em parte e só em simulação: os parâmetros da válvula foram estimados, e falta medir a pressão no tempo em bancada.
 
-### Slide 27: Trabalhos futuros e agradecimento (0:30)
+### Slide 26: Trabalhos futuros e agradecimento (0:30)
 > Como próximos passos: medir a velocidade e a curva da válvula, medir a resposta da malha, testar uma válvula mais rápida com antecipação ajustada ao tamanho da troca, congelar a integral durante a antecipação e estender o anti-windup ao limite de velocidade. Agradeço a atenção e fico à disposição para as perguntas.
 
 ---
@@ -176,9 +172,8 @@ Se estiver mais de 30 s atrasado num desses pontos, use os ⏩.
 
 ## Dicas para o dia
 
-- Ensaie com cronômetro duas vezes. Aos 5 minutos você deve estar no slide 9 ou 10; aos 10 minutos, no slide 15; aos 15 minutos, no slide 21.
-- Nos slides 12 a 18, aponte cada equação enquanto fala e diga o número dela; a banca acompanha melhor.
+- Ensaie com cronômetro duas vezes. Aos 5 minutos você deve estar no slide 10; aos 10 minutos, no slide 15; aos 15 minutos, no slide 21.
+- Nos slides 12 a 17, aponte cada equação enquanto fala e diga o número dela; a banca acompanha melhor.
 - No slide 14, aponte no diagrama os dois caminhos do número de bicos: pelo bloco do distúrbio, direto na pressão, e pelo *feedforward*, no comando da válvula.
-- No slide 16, a frase mais importante é "o salto não é sobressinal, é o próprio bico". Ela explica todos os picos dos cenários.
 - Nos slides com gráfico, diga primeiro o que o eixo mostra e depois o resultado.
 - Se uma pergunta for sobre algo que não foi feito, diga isso diretamente e cite a limitação ou o trabalho futuro correspondente.
