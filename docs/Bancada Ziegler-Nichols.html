@@ -1,0 +1,389 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bancada Ziegler-Nichols</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: painel de instrumento — controles à esquerda, osciloscópio à direita; empilha no celular */
+:root {
+  --bg: #eef1f0; --panel: #ffffff; --ink: #1d2725; --muted: #5d6b68; --line: #cfd8d5;
+  --grid: #e2e8e6; --accent: #0f7b6c; --signal: #c2410c; --ok: #2f7d3a; --warn: #b45309; --band: rgba(15,123,108,.08);
+  --display: "Barlow Semi Condensed", "Arial Narrow", sans-serif;
+  --body: "IBM Plex Sans", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #121817; --panel: #1a2220; --ink: #e3ebe8; --muted: #93a29e; --line: #2c3835;
+  --grid: #24302d; --accent: #3cc2ad; --signal: #fb923c; --ok: #6cc47a; --warn: #f2b25c; --band: rgba(60,194,173,.10); color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #121817; --panel: #1a2220; --ink: #e3ebe8; --muted: #93a29e; --line: #2c3835;
+  --grid: #24302d; --accent: #3cc2ad; --signal: #fb923c; --ok: #6cc47a; --warn: #f2b25c; --band: rgba(60,194,173,.10); color-scheme: dark }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-block: 24px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 20px; }
+header h1 { font-family: var(--display); font-weight: 700; font-size: clamp(26px, 4vw, 36px); letter-spacing: .01em; margin: 0; text-wrap: balance; }
+header p { margin: 4px 0 0; color: var(--muted); max-width: 72ch; }
+.grid { display: grid; grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 18px; display: grid; gap: 16px; min-width: 0; }
+.label { font-family: var(--display); font-weight: 600; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.kc-read { display: flex; align-items: baseline; gap: 10px; }
+.kc-read output { font-family: var(--mono); font-size: 34px; font-weight: 500; color: var(--accent); font-variant-numeric: tabular-nums; }
+.kc-read span { color: var(--muted); font-size: 13px; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.presets { display: flex; flex-wrap: wrap; gap: 6px; }
+button { font: 500 13px var(--body); border: 1px solid var(--line); background: var(--bg); color: var(--ink); border-radius: 6px; padding: 6px 10px; cursor: pointer; }
+button:hover { border-color: var(--accent); }
+button:focus-visible, select:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button.primary { background: var(--accent); color: var(--panel); border-color: var(--accent); font-weight: 600; width: 100%; padding: 9px 12px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+select { font: 14px var(--body); background: var(--bg); color: var(--ink); border: 1px solid var(--line); border-radius: 6px; padding: 4px 6px; }
+.verdict { border-radius: 8px; padding: 12px 14px; border: 1px solid var(--line); display: grid; gap: 2px; }
+.verdict strong { font-family: var(--display); font-size: 20px; font-weight: 700; }
+.verdict.ok strong { color: var(--ok); } .verdict.warn strong { color: var(--warn); } .verdict.osc strong { color: var(--signal); }
+.verdict small { color: var(--muted); font-size: 13px; }
+dl { margin: 0; display: grid; grid-template-columns: auto auto; gap: 4px 14px; font-size: 14px; }
+dt { color: var(--muted); } dd { margin: 0; font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.scope { display: grid; gap: 10px; min-width: 0; }
+canvas { width: 100%; display: block; border-radius: 8px; background: var(--panel); border: 1px solid var(--line); }
+.cap { color: var(--muted); font-size: 13px; margin: 0; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+td.n { font-family: var(--mono); text-align: right; font-variant-numeric: tabular-nums; }
+.note { font-size: 13px; color: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 16px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.how { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: grid; gap: 22px; min-width: 0; }
+.how h2 { font-family: var(--display); font-weight: 700; font-size: 26px; margin: 0; text-wrap: balance; }
+.how > p.lead { margin: 0; color: var(--muted); max-width: 75ch; }
+.steps { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px 28px; }
+@media (max-width: 860px) { .steps { grid-template-columns: minmax(0, 1fr); } }
+.step { display: grid; gap: 8px; min-width: 0; align-content: start; }
+.step h3 { font-family: var(--display); font-weight: 600; font-size: 19px; margin: 0; display: flex; gap: 10px; align-items: baseline; }
+.step h3 b { font-family: var(--mono); font-weight: 500; font-size: 13px; color: var(--accent); border: 1px solid var(--accent); border-radius: 4px; padding: 0 6px; }
+.step p { margin: 0; max-width: 65ch; }
+.eq { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 4px 12px; overflow-x: auto; font-size: 15px; color: var(--ink); }
+.eq mjx-container[display="true"] { margin: 8px 0 !important; }
+mjx-container { color: var(--ink); }
+.step ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.src { font-size: 13px; color: var(--muted); }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>Ensaio de Ziegler-Nichols pelo ganho crítico</h1>
+    <p>Barra de 7 bicos do TCC: só a ação proporcional ligada, um bico fecha em t = 0,5 s e a válvula de alívio tenta trazer a pressão de volta à referência P<sub>ref</sub>. Aumente K<sub>c</sub> até a pressão oscilar sem parar.</p>
+  </header>
+
+  <div class="grid">
+    <section class="panel" aria-label="Controles do ensaio">
+      <div>
+        <div class="label">Ganho proporcional K<sub>c</sub></div>
+        <div class="kc-read"><output id="kcOut" for="kc">1,46</output><span>(kgf/cm²)⁻¹</span></div>
+        <input id="kc" type="range" min="0.2" max="5" step="0.01" value="1.46" aria-label="Ganho Kc">
+      </div>
+      <div>
+        <div class="label">Pressão de referência P<sub>ref</sub></div>
+        <div class="kc-read"><output id="prOut" for="pr">3,50</output><span>kgf/cm²</span></div>
+        <input id="pr" type="range" min="2.0" max="3.55" step="0.01" value="3.5" aria-label="Pressão de referência">
+        <p class="note" id="prInfo">A válvula de alívio só baixa a pressão: com 7 bicos e a válvula fechada, a fonte sustenta no máximo 3,56 kgf/cm². No TCC, P<sub>ref</sub> = 3,5.</p>
+      </div>
+      <div class="presets" aria-label="Valores prontos">
+        <button data-kc="1.4633">ZN do P · 1,46</button>
+        <button data-mult="0.9">0,9 · K<sub>cr</sub></button>
+        <button data-mult="1.0">K<sub>cr</sub></button>
+        <button data-mult="1.05">1,05 · K<sub>cr</sub></button>
+      </div>
+
+      <div id="verdict" class="verdict"><strong>—</strong><small></small></div>
+      <dl>
+        <dt>Amplitude nos 2 s finais</dt><dd id="amp">—</dd>
+        <dt>Período da oscilação</dt><dd id="per">—</dd>
+        <dt>Pressão final</dt><dd id="pfin">—</dd>
+        <dt>Erro do P (Eq. 2.14)</dt><dd id="erro">—</dd>
+      </dl>
+
+      <div class="label">Condições do ensaio</div>
+      <div class="row"><label for="ts">Período de amostragem T<sub>s</sub></label>
+        <select id="ts"><option value="0.025">25 ms</option><option value="0.05" selected>50 ms (TCC)</option><option value="0.1">100 ms</option></select></div>
+      <div class="row"><label for="lim">Limite de velocidade da válvula</label>
+        <select id="lim"><option value="0.5" selected>0,5 s⁻¹ (TCC)</option><option value="1000">sem limite</option></select></div>
+
+      <button id="bis" class="primary">Achar K<sub>cr</sub> por bissecção</button>
+      <p class="note" id="bisInfo">Faz o que o script do TCC faz: 14 divisões no intervalo de 0,5 a 10, procurando o menor K<sub>c</sub> que mantém a oscilação.</p>
+    </section>
+
+    <section class="scope" aria-label="Resposta da pressão">
+      <canvas id="full" height="300" role="img" aria-label="Pressão na barra de 0 a 10 s"></canvas>
+      <canvas id="zoom" height="200" role="img" aria-label="Detalhe da pressão de 8,0 a 8,5 s"></canvas>
+      <div class="legend"><span><i style="background:var(--signal)"></i>pressão na barra</span><span><i style="background:var(--accent)"></i>P<sub>ref</sub> = <span id="prLeg">3,50</span> kgf/cm²</span><span><i style="background:var(--band)"></i>faixa ±10% (ISO 16122-2)</span></div>
+      <p class="cap">Em cima, o ensaio completo; embaixo, meio segundo do final (8,0 a 8,5 s), onde se vê se a oscilação parou. No ganho crítico, a pressão sobe e desce com período de duas leituras do controlador (2·T<sub>s</sub>).</p>
+
+      <section class="panel" aria-label="Regras de Ziegler-Nichols">
+        <div class="label">Regras de Ziegler-Nichols (Ogata, 2010, Tabela 8.2)</div>
+        <table>
+          <thead><tr><th>Controlador</th><th>K<sub>c</sub></th><th>T<sub>i</sub></th></tr></thead>
+          <tbody>
+            <tr><td>P (0,5·K<sub>cr</sub>)</td><td class="n" id="zP">—</td><td class="n">∞</td></tr>
+            <tr><td>PI (0,45·K<sub>cr</sub>; P<sub>cr</sub>/1,2)</td><td class="n" id="zPI">—</td><td class="n" id="zTi">—</td></tr>
+          </tbody>
+        </table>
+        <p class="note" id="zInfo">Use o botão de bissecção ou deixe K<sub>c</sub> no ponto em que a oscilação não para. No TCC: K<sub>cr</sub> = 2,93, P<sub>cr</sub> = 0,100 s.</p>
+      </section>
+    </section>
+  </div>
+
+  <section class="how" aria-labelledby="how-t">
+    <h2 id="how-t">Como o ensaio é calculado</h2>
+    <p class="lead">Tudo o que aparece nos gráficos é calculado no seu navegador, toda vez que um controle muda, por uma cópia em JavaScript do simulador do TCC (<code>simulacao/modelo_barra.py</code>, modo P da função <code>simular</code>). A ordem abaixo é a ordem em que o programa faz as contas.</p>
+
+    <div class="steps">
+      <div class="step">
+        <h3><b>1</b> Modelo estático da barra</h3>
+        <p>Três caminhos se encontram num único ponto de pressão \(P\): a fonte (bomba de pistão com a válvula de mola PCV) empurra líquido, e os bicos abertos e a válvula de alívio deixam sair. Cada bico segue a lei de orifício, e a fonte é uma curva de segundo grau ajustada aos dados:</p>
+        <div class="eq">\[ q = K\sqrt{P}, \qquad K = 0{,}4251\ \frac{\text{L/min}}{\sqrt{\text{kgf/cm}^2}} \]
+\[ P = a_2 Q_s^2 + a_1 Q_s + a_0 \quad\Rightarrow\quad Q_s(P) = \frac{-a_1 - \sqrt{a_1^2 - 4a_2(a_0 - P)}}{2a_2} \]
+\[ a_2 = -0{,}0355 \qquad a_1 = -0{,}2018 \qquad a_0 = 5{,}815 \]
+\[ Q_v = K_{v,max}\,\alpha\,\sqrt{P}, \qquad K_{v,max} = 3{,}5 \]</div>
+        <p>No equilíbrio, o que entra é igual ao que sai:</p>
+        <div class="eq">\[ Q_s(P) = \left(n\,K + K_{v,max}\,\alpha\right)\sqrt{P} \]</div>
+        <p>Essa equação não tem solução direta para \(P\), então a função <code>pRegime</code> a resolve por <strong>bissecção</strong>: começa no intervalo \([0,\ a_0]\), testa o meio e fica com a metade em que \(Q_s(P) - (nK + K_{v,max}\alpha)\sqrt{P}\) troca de sinal. São 100 repetições a cada cálculo.</p>
+        <p class="src">TCC: Eqs. 3.1–3.10, seção 3.3.</p>
+      </div>
+
+      <div class="step">
+        <h3><b>2</b> Ponto de partida</h3>
+        <p>Antes do ensaio, a válvula fica na abertura que dá exatamente \(P_{ref}\) com 7 bicos. Basta isolar \(\alpha\) no balanço com \(P = P_{ref}\):</p>
+        <div class="eq">\[ \alpha_{ff}(n) = \frac{1}{K_{v,max}}\left[\frac{Q_s(P_{ref})}{\sqrt{P_{ref}}} - n\,K\right] \]</div>
+        <p>Com \(P_{ref} = 3{,}5\), isso dá \(\alpha_{ff}(7) = 0{,}023\) (2,3% aberta). Esse valor também é o termo fixo \(\alpha_0\) do controlador P. O controle de \(P_{ref}\) recalcula esse ponto.</p>
+        <p class="src">TCC: Eq. 3.14, seção 3.5.2.</p>
+      </div>
+
+      <div class="step">
+        <h3><b>3</b> A válvula se move devagar</h3>
+        <p>O comando \(\alpha_c\) não é obedecido na hora. A válvula anda em direção a ele como um sistema de primeira ordem, mas o motor não passa de uma velocidade máxima:</p>
+        <div class="eq">\[ \frac{d\alpha}{dt} = \min\!\left(\omega_{max},\ \max\!\left(-\omega_{max},\ \frac{\alpha_c - \alpha}{\tau_a}\right)\right), \qquad 0 \le \alpha \le 1 \]
+\[ \tau_a = 0{,}2\ \text{s} \qquad \omega_{max} = 0{,}5\ \text{s}^{-1}\ \ (\text{curso total em } 2\ \text{s}) \]</div>
+        <p>Longe do comando, a válvula anda em rampa; perto, desacelera. Com a opção "sem limite de velocidade", \(\omega_{max}\) vira \(1000\ \text{s}^{-1}\), o que na prática tira o limite.</p>
+        <p class="src">TCC: Eq. 3.11, seção 3.4.2 (\(\tau_a\) e \(\omega_{max}\) são estimados).</p>
+      </div>
+
+      <div class="step">
+        <h3><b>4</b> Controlador P amostrado</h3>
+        <p>O controlador só lê a pressão a cada \(T_s\) (50 ms no TCC) e mantém o comando parado até a leitura seguinte, como um controlador digital real. Na leitura \(k\):</p>
+        <div class="eq">\[ e_k = P_k - P_{ref}, \qquad \alpha_{c,k} = \alpha_0 + K_c\,e_k, \qquad 0 \le \alpha_{c,k} \le 1 \]</div>
+        <p>O erro é definido ao contrário do usual porque abrir a válvula de alívio baixa a pressão: pressão acima da referência (\(e &gt; 0\)) pede para abrir. No ensaio de Ziegler-Nichols só existe a ação proporcional, sem integral e sem derivada.</p>
+        <p class="src">TCC: Eqs. 3.16–3.17 com \(T_i = \infty\); seção 3.5.3.</p>
+      </div>
+
+      <div class="step">
+        <h3><b>5</b> O laço no tempo (passo de 1 ms)</h3>
+        <p>A função <code>simular</code> repete 10 000 vezes, uma por milissegundo de 0 a 10 s:</p>
+        <ul>
+          <li><strong>bicos:</strong> em \(t = 0{,}5\) s, \(n\) passa de 7 para 6 (um bico fecha, a perturbação);</li>
+          <li><strong>controlador:</strong> se o passo é múltiplo de \(T_s\), lê \(P\) e calcula o novo \(\alpha_c\);</li>
+          <li><strong>válvula:</strong> avança pelo <strong>método de Euler</strong>:</li>
+        </ul>
+        <div class="eq">\[ \alpha_{k+1} = \alpha_k + \Delta t \left(\frac{d\alpha}{dt}\right)_k, \qquad \Delta t = 0{,}001\ \text{s} \]</div>
+        <ul>
+          <li><strong>pressão:</strong> resolve o balanço do passo 1 com o \(n\) e o \(\alpha\) atuais. A pressão responde na hora (hipótese H6 do TCC), e só a válvula tem atraso;</li>
+          <li>guarda \(P\) no vetor que vira o gráfico.</li>
+        </ul>
+        <p class="src">TCC: Eq. 3.12 e seção 3.6.2. São cerca de um milhão de iterações de bissecção por ensaio, o que o navegador faz em uma fração de segundo.</p>
+      </div>
+
+      <div class="step">
+        <h3><b>6</b> Oscila ou não oscila?</h3>
+        <p>A função <code>analisar</code> olha só os <strong>2 últimos segundos</strong>, quando qualquer transitório amortecido já teria acabado:</p>
+        <div class="eq">\[ A = \max_{8 \le t \le 10} P(t) \;-\; \min_{8 \le t \le 10} P(t), \qquad A &gt; 10^{-4}\ \text{kgf/cm}^2 \;\Rightarrow\; \text{oscila sem parar} \]</div>
+        <ul>
+          <li><strong>período:</strong> o tempo médio entre as vezes em que \(P\) cruza a própria média subindo;</li>
+          <li><strong>estável, com erro:</strong> se não oscila e a pressão final fica mais de 0,01 acima de \(P_{ref}\), é o erro permanente do controlador P, previsto por:</li>
+        </ul>
+        <div class="eq">\[ e_{reg} = \frac{|K_n|}{1 + K_c\,|K_g|} \]
+\[ K_g = \frac{\partial P}{\partial \alpha} \approx \frac{P(\alpha + 0{,}005) - P(\alpha - 0{,}005)}{0{,}01} \approx -2{,}66 \qquad K_n = \frac{\partial P}{\partial n} \approx -0{,}323 \]</div>
+        <p>\(K_g\) e \(K_n\) são calculados por diferença centrada no modelo estático, no \(P_{ref}\) escolhido; os valores acima são os de \(P_{ref} = 3{,}5\).</p>
+        <p class="src">TCC: Eq. 2.14, Eq. 3.13 e seção 3.5.5.</p>
+      </div>
+
+      <div class="step">
+        <h3><b>7</b> Achando o ganho crítico</h3>
+        <p>O botão de bissecção faz o mesmo que o script do TCC: o ganho crítico \(K_{cr}\) é o menor \(K_c\) que mantém a oscilação. Começa no intervalo \([0{,}5;\ 10]\) e, 14 vezes, simula o ensaio no meio \(K_m\) do intervalo:</p>
+        <ul>
+          <li>se oscila, o crítico está abaixo e \(K_m\) vira o limite superior;</li>
+          <li>se amortece, o crítico está acima e \(K_m\) vira o limite inferior.</li>
+        </ul>
+        <p>Depois de 14 divisões, a incerteza é \(9{,}5/2^{14} \approx 0{,}0006\). O período crítico \(P_{cr}\) é medido num ensaio logo acima do crítico. A causa da oscilação é a amostragem: com ganho alto, o controlador corrige demais numa leitura e demais para o outro lado na seguinte, por isso \(P_{cr} \approx 2\,T_s\). Mude \(T_s\) para ver o \(K_{cr}\) mudar. Com \(K_{cr}\) e \(P_{cr}\), as regras dão:</p>
+        <div class="eq">\[ \text{P:}\quad K_c = 0{,}5\,K_{cr} \qquad\qquad \text{PI:}\quad K_c = 0{,}45\,K_{cr}, \quad T_i = \frac{P_{cr}}{1{,}2} \]</div>
+        <p class="src">TCC: seção 3.5.4 e Eqs. 2.15–2.16 (Ogata, 2010, Tabela 8.2).</p>
+      </div>
+
+      <div class="step">
+        <h3><b>8</b> Como o gráfico é desenhado</h3>
+        <p>Os 10 000 valores de \(P\) são desenhados num <code>&lt;canvas&gt;</code>. Cada ponto \((t, P)\) vira um pixel por regra de três, numa área de largura \(w\) e altura \(h\) com margens \(x_0\) e \(y_0\):</p>
+        <div class="eq">\[ x = x_0 + \frac{t - t_0}{t_1 - t_0}\,w \qquad\qquad y = y_0 + \frac{P_{sup} - P}{P_{sup} - P_{inf}}\,h \]</div>
+        <ul>
+          <li>Quando há mais pontos que pixels, o desenho pula pontos (cerca de dois por pixel) sem perder a forma da curva.</li>
+          <li>Gráfico de cima: escala de \(0{,}94\,P_{ref}\) a \(1{,}12\,P_{ref}\), ampliada se a pressão sair dela. A faixa verde é a tolerância \(0{,}9\,P_{ref} \le P \le 1{,}1\,P_{ref}\) da ISO 16122-2, e a linha tracejada é \(P_{ref}\).</li>
+          <li>Gráfico de baixo: só de 8,0 a 8,5 s, com escala automática (do mínimo ao máximo do trecho, mais 15% de folga). Por isso uma oscilação de milésimos de kgf/cm² aparece grande.</li>
+          <li>Tudo é redesenhado ao mover um controle, ao mudar o tamanho da janela ou ao trocar entre tema claro e escuro.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="src">O que esta página não inclui: ação integral no ensaio, ruído no sensor e perda de pressão ao longo da barra (hipótese H2). Os parâmetros \(\tau_a\), \(\omega_{max}\) e a curva da válvula são estimados, e não medidos, como no TCC.</p>
+  </section>
+</div>
+
+<script>
+window.MathJax = { tex: { inlineMath: [["\\(", "\\)"]], displayMath: [["\\[", "\\]"]] },
+  svg: { fontCache: "global" }, options: { enableMenu: false } };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.2/es5/tex-svg.min.js" async></script>
+<script>
+// ---- Modelo do TCC (simulacao/modelo_barra.py), mesmos parâmetros ----
+const K = 0.4250840829890423;
+const A2 = -0.0355011690041341, A1 = -0.20176707607045202, A0 = 5.8151919718249525;
+const KV = 3.5, DT = 0.001, TAU = 0.2, TF = 10.0;
+let PREF = 3.5;
+
+function qFonte(p) { if (p >= A0) return 0; return (-A1 - Math.sqrt(A1 * A1 - 4 * A2 * (A0 - p))) / (2 * A2); }
+function pRegime(k) { let lo = 0, hi = A0; for (let i = 0; i < 100; i++) { const m = 0.5 * (lo + hi); if (qFonte(m) - k * Math.sqrt(m) > 0) lo = m; else hi = m; } return 0.5 * (lo + hi); }
+function alphaFF(n) { const kv = qFonte(PREF) / Math.sqrt(PREF) - n * K; return Math.min(Math.max(kv / KV, 0), 1); }
+let A0FF = alphaFF(7);
+// ganhos linearizados no ponto de operação (7 bicos, P = P_ref), por diferença centrada
+function ganhos() {
+  const kg = (pRegime(7 * K + KV * (A0FF + 0.005)) - pRegime(7 * K + KV * (A0FF - 0.005))) / 0.01;
+  const kn = (pRegime(7.005 * K + KV * A0FF) - pRegime(6.995 * K + KV * A0FF)) / 0.01;
+  return { kg, kn };
+}
+let G = ganhos();
+
+// Só ação P (Ti infinito), igual ao modo "P" de simular(): um bico fecha em 0,5 s
+function simular(kc, ts, wmax) {
+  const passos = Math.round(TF / DT), cada = Math.round(ts / DT);
+  const P = new Float64Array(passos);
+  let n = 7, alpha = A0FF, ac = alpha, p = PREF;
+  for (let k = 0; k < passos; k++) {
+    const t = k * DT;
+    if (t >= 0.5 - 1e-12) n = 6;
+    if (k % cada === 0) { const e = p - PREF; ac = Math.min(Math.max(A0FF + kc * e, 0), 1); }
+    const v = Math.min(Math.max((ac - alpha) / TAU, -wmax), wmax);
+    alpha = Math.min(Math.max(alpha + v * DT, 0), 1);
+    p = pRegime(n * K + KV * alpha);
+    P[k] = p;
+  }
+  return P;
+}
+function analisar(P) {
+  const ini = Math.round((TF - 2) / DT); let mn = Infinity, mx = -Infinity, soma = 0;
+  for (let k = ini; k < P.length; k++) { mn = Math.min(mn, P[k]); mx = Math.max(mx, P[k]); soma += P[k]; }
+  const media = soma / (P.length - ini), sobe = [];
+  for (let k = ini + 1; k < P.length; k++) if (P[k - 1] - media <= 0 && P[k] - media > 0) sobe.push(k);
+  let per = null; if (sobe.length > 2) { let s = 0; for (let i = 1; i < sobe.length; i++) s += sobe[i] - sobe[i - 1]; per = s / (sobe.length - 1) * DT; }
+  return { amp: mx - mn, per, final: P[P.length - 1] };
+}
+
+// ---- Desenho ----
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (x, d = 2) => x.toFixed(d).replace(".", ",");
+let ultimo = null, kcr = null, pcr = null;
+
+function plot(cv, P, t0, t1, opts) {
+  const dpr = window.devicePixelRatio || 1, W = cv.clientWidth, H = parseFloat(cv.getAttribute("height"));
+  cv.width = W * dpr; cv.height = H * dpr; cv.style.height = H + "px";
+  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, W, H);
+  const L = 52, R = 14, T = 14, B = 30, w = W - L - R, h = H - T - B;
+  const i0 = Math.round(t0 / DT), i1 = Math.min(P.length - 1, Math.round(t1 / DT));
+  let lo = opts.lo, hi = opts.hi;
+  if (opts.auto) { lo = Infinity; hi = -Infinity; for (let k = i0; k <= i1; k++) { lo = Math.min(lo, P[k]); hi = Math.max(hi, P[k]); }
+    const f = 0.15 * (hi - lo) + 0.004; lo -= f; hi += f; }
+  const X = t => L + (t - t0) / (t1 - t0) * w, Y = p => T + (hi - p) / (hi - lo) * h;
+  g.font = "12px " + css("--mono"); g.fillStyle = css("--muted"); g.strokeStyle = css("--grid"); g.lineWidth = 1;
+  // faixa ±10%
+  const b0 = Math.max(lo, 0.9 * PREF), b1 = Math.min(hi, 1.1 * PREF);
+  if (b1 > b0) { g.fillStyle = css("--band"); g.fillRect(L, Y(b1), w, Y(b0) - Y(b1)); }
+  // grade
+  const nY = 5; g.fillStyle = css("--muted");
+  for (let i = 0; i <= nY; i++) { const p = lo + (hi - lo) * i / nY, y = Y(p);
+    g.beginPath(); g.moveTo(L, y); g.lineTo(L + w, y); g.stroke(); g.textAlign = "right"; g.fillText(fmt(p, opts.dec), L - 6, y + 4); }
+  const nX = opts.nX; g.textAlign = "center";
+  for (let i = 0; i <= nX; i++) { const t = t0 + (t1 - t0) * i / nX, x = X(t);
+    g.beginPath(); g.moveTo(x, T); g.lineTo(x, T + h); g.stroke(); g.fillText(fmt(t, opts.tdec) + " s", x, H - 10); }
+  // referência
+  if (PREF > lo && PREF < hi) { g.strokeStyle = css("--accent"); g.setLineDash([5, 4]); g.beginPath(); g.moveTo(L, Y(PREF)); g.lineTo(L + w, Y(PREF)); g.stroke(); g.setLineDash([]); }
+  // sinal
+  g.strokeStyle = css("--signal"); g.lineWidth = 1.8; g.beginPath();
+  const passo = Math.max(1, Math.floor((i1 - i0) / (w * 2)));
+  for (let k = i0; k <= i1; k += passo) { const x = X(k * DT), y = Y(P[k]); k === i0 ? g.moveTo(x, y) : g.lineTo(x, y); }
+  g.stroke();
+  g.fillStyle = css("--muted"); g.textAlign = "left"; g.fillText("P [kgf/cm²]", L + 6, T + 12);
+}
+
+function desenhar() {
+  if (!ultimo) return;
+  let lo = 0.94 * PREF, hi = 1.12 * PREF;
+  for (let k = 0; k < ultimo.length; k += 10) { lo = Math.min(lo, ultimo[k]); hi = Math.max(hi, ultimo[k]); }
+  plot($("full"), ultimo, 0, 10, { lo, hi, nX: 10, dec: 2, tdec: 0 });
+  plot($("zoom"), ultimo, 8.0, 8.5, { auto: true, nX: 5, dec: 3, tdec: 1 });
+}
+
+function rodar() {
+  const kc = parseFloat($("kc").value), ts = parseFloat($("ts").value), wmax = parseFloat($("lim").value);
+  $("kcOut").textContent = fmt(kc);
+  ultimo = simular(kc, ts, wmax);
+  const r = analisar(ultimo), oscila = r.amp > 1e-4;
+  const v = $("verdict");
+  if (oscila) { v.className = "verdict osc"; v.querySelector("strong").textContent = "Oscila sem parar";
+    v.querySelector("small").textContent = "Kc está no ganho crítico ou acima dele."; }
+  else if (Math.abs(r.final - PREF) > 0.01) { v.className = "verdict warn"; v.querySelector("strong").textContent = "Estável, com erro";
+    v.querySelector("small").textContent = "A pressão para acima da referência: é o erro do controlador P."; }
+  else { v.className = "verdict ok"; v.querySelector("strong").textContent = "Estável"; v.querySelector("small").textContent = ""; }
+  $("amp").textContent = fmt(r.amp, 4) + " kgf/cm²";
+  $("per").textContent = oscila && r.per ? fmt(r.per, 3) + " s" : "—";
+  $("pfin").textContent = fmt(r.final, 3) + " kgf/cm²";
+  // Eq. 2.14: e = d / (1 + Kc|Kg|), com d = |Kn| (um bico) e os ganhos no P_ref atual
+  $("erro").textContent = oscila ? "—" : "+" + fmt(Math.abs(G.kn) / (1 + kc * Math.abs(G.kg)), 3) + " kgf/cm²";
+  desenhar();
+}
+
+function bisseccao() {
+  const ts = parseFloat($("ts").value), wmax = parseFloat($("lim").value);
+  let lo = 0.5, hi = 10;
+  for (let i = 0; i < 14; i++) { const m = 0.5 * (lo + hi); if (analisar(simular(m, ts, wmax)).amp > 1e-4) hi = m; else lo = m; }
+  kcr = hi; pcr = analisar(simular(hi * 1.002, ts, wmax)).per || 2 * ts;
+  $("zP").textContent = fmt(0.5 * kcr); $("zPI").textContent = fmt(0.45 * kcr); $("zTi").textContent = fmt(pcr / 1.2, 3) + " s";
+  $("zInfo").textContent = `Achado: Kcr = ${fmt(kcr)} e Pcr = ${fmt(pcr, 3)} s (T_s = ${fmt(ts * 1000, 0)} ms, ${wmax > 10 ? "sem limite de velocidade" : "com limite de velocidade"}). No TCC: Kcr = 2,93 e Pcr = 0,100 s.`;
+  $("bisInfo").textContent = "Pronto: os botões de 0,9·Kcr, Kcr e 1,05·Kcr agora usam esse valor.";
+  $("kc").value = kcr.toFixed(2); rodar();
+}
+
+function mudarPref() {
+  PREF = parseFloat($("pr").value);
+  A0FF = alphaFF(7); G = ganhos(); kcr = null;
+  $("prOut").textContent = fmt(PREF); $("prLeg").textContent = fmt(PREF);
+  const a6 = alphaFF(6);
+  $("prInfo").textContent = a6 >= 1
+    ? "Com essa referência, a válvula toda aberta não consegue segurar a pressão quando um bico fecha."
+    : `Abertura de equilíbrio: ${fmt(A0FF * 100, 1)}% com 7 bicos e ${fmt(a6 * 100, 1)}% com 6. Kg = ${fmt(G.kg)} e Kn = ${fmt(G.kn, 3)} kgf/cm² por bico. No TCC, Pref = 3,5.`;
+  $("zP").textContent = "—"; $("zPI").textContent = "—"; $("zTi").textContent = "—";
+  rodar();
+}
+$("pr").addEventListener("input", mudarPref);
+$("kc").addEventListener("input", rodar);
+$("ts").addEventListener("change", () => { kcr = null; rodar(); });
+$("lim").addEventListener("change", () => { kcr = null; rodar(); });
+$("bis").addEventListener("click", () => { $("bisInfo").textContent = "Calculando…"; setTimeout(bisseccao, 20); });
+document.querySelectorAll(".presets button").forEach(b => b.addEventListener("click", () => {
+  const base = kcr ?? 2.9266;
+  const kc = b.dataset.kc ? parseFloat(b.dataset.kc) : base * parseFloat(b.dataset.mult);
+  $("kc").value = kc.toFixed(2); rodar();
+}));
+window.addEventListener("resize", desenhar);
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change", desenhar);
+new MutationObserver(desenhar).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+rodar();
+</script>
+
+</body></html>
