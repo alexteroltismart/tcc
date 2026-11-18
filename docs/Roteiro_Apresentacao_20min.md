@@ -10,7 +10,7 @@ Cada slide tem três partes:
 - **Fala:** um texto de apoio, em frases curtas. Não é para decorar; diga com suas palavras.
 
 **Tempo:**
-- A fala prevista soma **19 min 35 s**, com 25 s de folga.
+- A fala prevista soma **19 min 40 s**, com 20 s de folga.
 - O ritmo de referência é de cerca de 130 palavras por minuto.
 - Se atrasar, encurte os slides marcados com ⏩ (cada um tem uma versão de uma frase).
 - Não corte os slides 16 e 17 (malha fechada e polos): eles são o centro da parte de controle.
@@ -40,35 +40,35 @@ Ao mudar de bloco, diga uma frase de transição. Elas estão marcadas com ➜ n
 | 6 | Etapas ⏩ | 0:15 | 3:05 |
 | 7 | Bancada de referência | 0:40 | 3:45 |
 | 8 | Modelo estático | 0:50 | 4:35 |
-| 9 | Resistência R₁/n² ⏩ | 0:35 | 5:10 |
-| 10 | Validação ⏩ | 0:35 | 5:45 |
-| 11 | Modelo dinâmico | 0:40 | 6:25 |
-| 12 | Estratégia de controle | 0:50 | 7:15 |
-| 13 | Abertura de equilíbrio (*feedforward*) | 0:55 | 8:10 |
-| 14 | Linearização | 1:10 | 9:20 |
-| 15 | Domínio de Laplace | 0:55 | 10:15 |
-| 16 | Malha fechada | 1:25 | 11:40 |
-| 17 | Alocação de polos | 1:20 | 13:00 |
-| 18 | Forma discreta e conferência | 0:55 | 13:55 |
-| 19 | Simulação em Python | 0:45 | 14:40 |
-| 20 | Cenários e métricas ⏩ | 0:20 | 15:00 |
-| 21 | Resultados | 0:35 | 15:35 |
-| 22 | Cenário C1 | 0:25 | 16:00 |
-| 23 | Cenário C2 | 0:35 | 16:35 |
-| 24 | Cenário C3 | 0:25 | 17:00 |
-| 25 | Feedforward antecipado | 0:45 | 17:45 |
-| 26 | Velocidade da válvula | 0:30 | 18:15 |
-| 27 | Conclusões | 0:50 | 19:05 |
-| 28 | Trabalhos futuros e agradecimento | 0:30 | 19:35 |
+| 9 | Resistência R₁/n² ⏩ | 0:30 | 5:05 |
+| 10 | Validação ⏩ | 0:45 | 5:50 |
+| 11 | Modelo dinâmico | 0:40 | 6:30 |
+| 12 | Estratégia de controle | 0:50 | 7:20 |
+| 13 | Abertura de equilíbrio (*feedforward*) | 0:55 | 8:15 |
+| 14 | Linearização | 1:10 | 9:25 |
+| 15 | Domínio de Laplace | 0:55 | 10:20 |
+| 16 | Malha fechada | 1:25 | 11:45 |
+| 17 | Alocação de polos | 1:20 | 13:05 |
+| 18 | Forma discreta e conferência | 0:55 | 14:00 |
+| 19 | Simulação em Python | 0:45 | 14:45 |
+| 20 | Cenários e métricas ⏩ | 0:20 | 15:05 |
+| 21 | Resultados | 0:35 | 15:40 |
+| 22 | Cenário C1 | 0:25 | 16:05 |
+| 23 | Cenário C2 | 0:35 | 16:40 |
+| 24 | Cenário C3 | 0:25 | 17:05 |
+| 25 | Feedforward antecipado | 0:45 | 17:50 |
+| 26 | Velocidade da válvula | 0:30 | 18:20 |
+| 27 | Conclusões | 0:50 | 19:10 |
+| 28 | Trabalhos futuros e agradecimento | 0:30 | 19:40 |
 
 **Pontos de controle do relógio** (quando o slide aparece):
 
 | Slide | Horário |
 |---|---|
 | 8 | 3:45 |
-| 14 | 8:10 |
-| 20 | 14:40 |
-| 27 | 18:15 |
+| 14 | 8:15 |
+| 20 | 14:45 |
+| 27 | 18:20 |
 
 Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
@@ -160,7 +160,7 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 >
 > Guardem esta ideia: a pressão só depende de C. Ela vai voltar no controle.
 
-### Slide 9: Resistência R₁/n² ⏩ (0:35)
+### Slide 9: Resistência R₁/n² ⏩ (0:30)
 **Mostre:** as duas fórmulas da esquerda e o ponto n = 7 na Figura 17.
 
 **Ideia:** um único parâmetro físico descreve a barra melhor que a fórmula empírica de quatro coeficientes.
@@ -170,15 +170,27 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
 *Versão curta: "A resistência da barra segue R₁ sobre n ao quadrado, com um parâmetro só e erro máximo de 5,9 por cento."*
 
-### Slide 10: Validação ⏩ (0:35)
-**Mostre:** a equação da fonte e a linha preta; a equação de carga e uma linha azul; depois os pontos laranja nos cruzamentos e a linha verde do Pref.
+### Slide 10: Validação ⏩ (0:45)
+**Mostre:**
+1. A equação da fonte e a linha preta.
+2. A equação de carga e a linha azul de n = 7.
+3. Os pontos laranja, subindo de n = 7 até n = 1.
+4. Por último, a linha verde do Pref.
 
-**Ideia:** o modelo acerta os dados, e a referência tem de ficar abaixo de 3,56.
+**Ideia:** o ponto de operação é o cruzamento entre o que a fonte entrega e o que a barra deixa sair, e o modelo acerta esses cruzamentos.
 
 **Fala:**
-> A linha preta é a curva da fonte, a Equação 4.1. Cada linha azul é a curva de carga da barra para um número de bicos: P igual a Q sobre n K, ao quadrado. O ponto de operação é o cruzamento das duas. O modelo reproduziu os sete pontos medidos, em laranja, com erro de até 0,7 por cento na pressão e 2,3 na vazão. Ele também mostrou uma regra: a válvula de alívio só baixa a pressão. Então a referência tem de ficar abaixo do que a fonte sustenta com sete bicos, que é 3,56. Adotei 3,5.
+> A linha preta é a fonte: quanta pressão a bomba segura para cada vazão. Ela desce, porque quanto mais a barra puxa, menos pressão sobra.
+>
+> Cada linha azul é a barra com um número de bicos: quanta pressão ela precisa para deixar passar uma vazão. Sai da lei do bico: P igual a Q sobre n K, ao quadrado. Com menos bicos, a curva fica mais em pé.
+>
+> O ponto de operação é o cruzamento das duas. Os pontos laranja são as medições, e caem em cima dos cruzamentos: erro de até 0,7 por cento na pressão.
+>
+> Quando bicos fecham, o cruzamento sobe pela linha preta. É o aumento de pressão do problema.
+>
+> A válvula de alívio funciona como uma saída a mais, então ela só consegue baixar o cruzamento. Com sete bicos e a válvula fechada, ele está em 3,56. Por isso a referência tem de ficar abaixo disso, e adotei 3,5.
 
-*Versão curta: "O modelo errou menos de 1 por cento na pressão, e a referência adotada foi 3,5."*
+*Versão curta: "O ponto de operação é o cruzamento da fonte com a barra; o modelo acerta esses pontos com menos de 1 por cento de erro, e a referência adotada foi 3,5, abaixo dos 3,56 que a fonte segura com sete bicos."*
 
 ### Slide 11: Modelo dinâmico (0:40)
 **Mostre:** a equação de cima (pressão), depois a de baixo (válvula) e a foto da válvula (Figura 7).
@@ -413,6 +425,8 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 | Um controlador real não é amostrado? | É; aqui a leitura foi considerada a cada 1 ms. Pela regra de Castrucci (seção 12.6), basta amostrar ao menos 10 vezes mais rápido que a oscilação da malha. | 3.8 |
 | Por que não usou a ação derivativa? | O salto de um bico (0,33 em 1 ms) daria um comando de cerca de 2,7 de abertura mesmo com T_d = 0,01 s; e a derivativa não acrescenta polo, os dois já estão no lugar. | 3.5.6 |
 | Por que o anti-windup só no limite de posição? | É a técnica descrita por Fernandes e Goldemberg (2001); estendê-lo ao limite de velocidade baixou o C3 do PI de 8,3% para 3,2% num teste e ficou como trabalho futuro. | 3.5.3, 4.5 |
+| Por que a curva da fonte é uma parábola e não uma reta? | A reta teve erro doze vezes maior (RMSE 0,073 contra 0,006 kgf/cm²); a parábola é o modelo mais simples que segue os pontos (R² = 0,9999). | 4.1 |
+| Onde a válvula de alívio aparece na Figura 18? | Ela é uma saída a mais: abrir a válvula deixa a curva de carga mais deitada, e o cruzamento desce pela linha preta até Pref. | 3.3.4, 4.1 |
 | Por que P_ref = 3,5 e não 4,0 kgf/cm²? | A válvula de alívio só baixa a pressão, e com sete bicos a fonte sustenta 3,56; 4,0 não seria atingível. | 4.1 |
 | A hipótese de pressão instantânea vale? | Para a bancada, sim: com a mangueira modelada, a diferença foi de no máximo 0,4 ponto percentual; em barras longas precisa ser revista. | 3.4.1, 4.2 |
 
@@ -420,7 +434,7 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
 ## Dicas para o dia
 
-- Ensaie com cronômetro duas vezes. Aos 5 minutos você deve estar no slide 9; aos 10 minutos, no slide 15; aos 15 minutos, no slide 21.
+- Ensaie com cronômetro duas vezes. Aos 5 minutos você deve estar no slide 9; aos 10 minutos, no slide 15; aos 15 minutos, no slide 20.
 - Nos slides de equação (13 a 18), aponte cada equação enquanto fala e diga o número dela.
 - Nos slides com gráfico, diga primeiro o que cada eixo mostra e depois o resultado.
 - Quando não lembrar a fala, diga a **Ideia** do slide e passe para o próximo.
