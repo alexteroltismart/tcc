@@ -1,0 +1,12 @@
+digraph G { rankdir=LR; dpi=200; bgcolor=white; nodesep=0.4;
+ node [fontname="Arial", fontsize=12, shape=box, style="rounded", margin="0.15,0.08"];
+ edge [fontname="Arial", fontsize=11];
+ T [label="Reservatório", shape=cylinder, style=""];
+ F [label=<Fonte<BR/>P = a<SUB>2</SUB>Q<SUB>s</SUB><SUP>2</SUP> + a<SUB>1</SUB>Q<SUB>s</SUB> + a<SUB>0</SUB><BR/>(Eq. 3.5)>];
+ N [label=<Nó de pressão P<BR/>capacitância C<SUB>h</SUB>>, shape=ellipse, style=""];
+ B [label="n bicos abertos em paralelo\n(solenoides on/off)"];
+ V [label="Válvula reguladora\nde alívio, abertura α"];
+ L [label="Alvo", shape=plaintext, style=""];
+ T -> F; F -> N [label=<Q<SUB>s</SUB>>]; N -> B [label=<Q<SUB>barra</SUB> = n·K·√P>]; N -> V [label=<Q<SUB>v</SUB> = K<SUB>v</SUB>(α)·√P>];
+ V -> T [label="retorno", constraint=false]; B -> L;
+}

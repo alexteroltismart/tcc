@@ -1,0 +1,31 @@
+K = 0.4251  fonte: a2=-0.0355 a1=-0.2018 a0=5.815  erro max P=0.73% Q=2.27%
+LOO: erro max P=0.92% Q=2.66%
+P max (válvula fechada): {1: np.float64(5.577), 2: np.float64(5.285), 3: np.float64(4.956), 4: np.float64(4.606), 5: np.float64(4.25), 6: np.float64(3.899), 7: np.float64(3.562)}
+  n=1  α_ff=0.752  P(α+)=3.4867  P(α−)=3.5133  Kg=-2.659
+  n=2  α_ff=0.631  P(α+)=3.4867  P(α−)=3.5133  Kg=-2.659
+  n=3  α_ff=0.509  P(α+)=3.4867  P(α−)=3.5133  Kg=-2.659
+  n=4  α_ff=0.388  P(α+)=3.4867  P(α−)=3.5133  Kg=-2.659
+  n=5  α_ff=0.266  P(α+)=3.4867  P(α−)=3.5133  Kg=-2.659
+  n=6  α_ff=0.145  P(α+)=3.4867  P(α−)=3.5133  Kg=-2.659
+  n=7  α_ff=0.023  P(α+)=3.4867  P(α−)=3.5133  Kg=-2.659
+Polos: ζ=0.7  ts=0.5 s  ωn=11.429 rad/s  Kc=0.8273  Ti=0.0842 s
+C1  aberta fora= 69.2%  IAE=24.718  desv.max= 57.8%  t_acom=0.00s  sem acomodar=11/12  vel.max= 0.0%  P_final=3.500
+C1  P      fora= 38.5%  IAE=7.411  desv.max= 24.7%  t_acom=0.15s  sem acomodar=11/12  vel.max= 4.7%  P_final=3.500
+C1  PI     fora=  0.0%  IAE=0.776  desv.max=  9.5%  t_acom=0.44s  sem acomodar=0/12  vel.max=13.5%  P_final=3.500
+C1  PI+FF  fora=  0.0%  IAE=0.864  desv.max=  9.5%  t_acom=0.48s  sem acomodar=0/12  vel.max=14.6%  P_final=3.500
+C2  aberta fora= 85.7%  IAE=18.375  desv.max= 57.8%  t_acom=—  sem acomodar=2/2  vel.max= 0.0%  P_final=5.525
+C2  P      fora= 46.3%  IAE=5.903  desv.max= 38.9%  t_acom=—  sem acomodar=2/2  vel.max= 6.4%  P_final=4.115
+C2  PI     fora=  6.8%  IAE=0.829  desv.max= 29.7%  t_acom=1.02s  sem acomodar=0/2  vel.max=12.0%  P_final=3.500
+C2  PI+FF  fora=  6.8%  IAE=0.827  desv.max= 29.6%  t_acom=1.02s  sem acomodar=0/2  vel.max=12.0%  P_final=3.500
+C3  aberta fora= 90.5%  IAE=23.260  desv.max= 57.8%  t_acom=0.00s  sem acomodar=65/66  vel.max= 0.0%  P_final=4.538
+C3  P      fora= 50.1%  IAE=7.060  desv.max= 25.1%  t_acom=0.15s  sem acomodar=65/66  vel.max=34.8%  P_final=3.828
+C3  PI     fora=  8.3%  IAE=3.152  desv.max= 18.8%  t_acom=0.20s  sem acomodar=37/66  vel.max=68.4%  P_final=3.493
+C3  PI+FF  fora=  9.5%  IAE=3.267  desv.max= 20.6%  t_acom=0.23s  sem acomodar=38/66  vel.max=75.1%  P_final=3.422
+Linear: Kn=-0.3230  polo P=-16.00  polos PI=[(-7.999999999999999+8.161632489763257j), (-7.999999999999999-8.161632489763257j)]  ωn=11.43 rad/s  ζ=0.700  ts(2%)=0.500 s  erro P=0.1009
+  T_n P(s): num=[-0.0646, -0.32299]  den=[0.2, 3.2]
+  T_n PI(s): num=[-0.00544, -0.0272, -0.0]  den=[0.01684, 0.2695, 2.2]
+  T_n PI+FF(s): num=[-0.00544, -0.0, -0.0]  den=[0.01684, 0.2695, 2.2]
+Derivada implícita: Qs=5.719 C=3.0571 C/(2√P)=0.8170 dQs/dP=-1.6452 dP/dC=-0.7598 → Kg=-2.6594 Kn=-0.3230
+ω_max=0.50/s  C2: PI 6.8% PI+FF 6.8%  C3: PI 8.3% PI+FF 9.5%
+ω_max=1.00/s  C2: PI 3.4% PI+FF 3.4%  C3: PI 0.4% PI+FF 1.5%
+ω_max=2.00/s  C2: PI 1.7% PI+FF 1.7%  C3: PI 0.2% PI+FF 0.3%

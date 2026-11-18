@@ -1,0 +1,16 @@
+== H6: pressão instantânea x mangueira (v07, C_h 0,5 mL), anti-windup só posição ==
+C2 P      H6 46.62%  mangueira 46.64%  dif +0.02 p.p.
+C2 PI     H6  7.47%  mangueira  7.57%  dif +0.10 p.p.
+C2 PI+FF  H6  6.76%  mangueira  6.86%  dif +0.10 p.p.
+C3 P      H6 49.99%  mangueira 50.26%  dif +0.27 p.p.
+C3 PI     H6 11.46%  mangueira 11.64%  dif +0.19 p.p.
+C3 PI+FF  H6 12.38%  mangueira 11.96%  dif -0.41 p.p.
+maior diferença: 0.41 p.p.
+Kc-limite (só P) com mangueira: 5.011
+== passo de integração (C3) ==
+dt=1 ms  P 49.99%  PI 11.46%  PI+FF 12.38%
+dt=2 ms  P 50.02%  PI 11.29%  PI+FF 12.23%
+dt=10 ms  P 50.45%  PI 10.60%  PI+FF 11.15%
+== ruído no sensor (7 bicos, 20 s, PI sem FF, anti-windup só posição) ==
+ruído 1%: curso Kc0,33 1.00  polos 2.54  razão 2.53  fora polos 0.0%  fora Kc0,33 0.0%
+ruído 2%: curso Kc0,33 1.79  polos 3.75  razão 2.10  fora polos 0.0%  fora Kc0,33 0.0%
