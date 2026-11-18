@@ -1,77 +1,92 @@
-# TCC — pulverização agrícola (drone/avião)
+# TCC — controle de pressão em barra de pulverização bico a bico
 
-## Dados (`dados/`, não versionado)
+Eng. Elétrica, UNEMAT Sinop. Autor: Alex de Jesus Terolti. Orientador: Prof. Dr. Rogério Bastos Quirino.
+Título: *Modelagem de sistema de controle para pulverização agrícola de precisão*.
 
-Um voo = um `qfield_project` (QGIS/QField) + um pacote de GeoTIFFs.
+Tema: manter a pressão de uma barra com alimentação em série enquanto os bicos abrem e fecham,
+usando uma válvula de alívio como atuador. Modelo de resistência fluídica + simulação em Python,
+com parâmetros ajustados à bancada de 7 bicos de Rosa, Terra e Drews Jr (2019). Sem dado medido
+no tempo: a parte dinâmica é estudo de projeto em simulação.
 
-**Vetor** — GeoPackage, EPSG:32721, ler com `geopandas.read_file()`:
-- `Spraying.gpkg` / `Transport.gpkg` — linhas do trajeto, 150 feições. Colunas em
-  português com espaços e parênteses (`'taxa (L/ha)'`, `'pressão (kPa)'`, `'volume (L)'`).
-- `field_limits.gpkg` — polígonos dos talhões (layer chama-se `temp`), `area_ha`, `field_name`.
+## Onde está cada coisa
 
-**Raster** — `.../merge/<variavel>/<AAAAMMDD>_1_<id>_<variavel>.tif`:
-COG, LZW, EPSG:32721 (UTM 21S), pixel 0.25 m, ~9000×8200, com overviews.
-Variáveis: `app`, `rate_lha`, `cdd`, `pressure_dbar`, `speed_kmh`, `elevation_m`,
-`margin_cm`, `sensitivity`, `var`.
+| caminho | conteúdo |
+|---|---|
+| `contexto/NN.md` | texto da monografia, uma versão por arquivo (04–25). **A maior é a atual.** Markdown com LaTeX; no fim, "NOTAS DE REVISÃO" (remover antes da entrega) |
+| `contexto/relatorio_banca*.md` | revisões simuladas da banca, com prioridades 🔴🟡🟢 |
+| `contexto/*_20XX_*.md` | resumos das referências principais (Rosa 2019, Steward & Humburg 2000); `Brunetti_2008_formulas.md` = fórmulas de fluidos com nº/página conferidos, mapeadas às Eqs. do TCC |
+| `referencias base/Brunetti_2008_Mecanica_dos_Fluidos.md` | texto integral do livro (extração automática; equações quebradas — conferir no PDF, pág. PDF = pág. livro + 16) |
+| `referencias base/` | PDFs das referências (Rosa 2019 PT; `Fabio.pdf` = Terra, Rosa e Drews, "Evaluation of the Pressure-Flow Relationship…" — outro artigo do grupo, **não** é a versão EN do Rosa; Terra 2020 IFAC = `A_Low_Cost_Prototype…`; Steward 2000; Merritt; Ogata 2010; ISO 16122-1/-2) | |
+| `simulacao/modelo_barra.py` | modelo, sintonia, cenários e figuras — **todos** os números do Cap. 4 saem daqui |
+| `simulacao/v07/` | script/resultados da versão 07 (com capacitância da mangueira); não usar para números novos, só para a conferência da H6 |
+| `simulacao/v09/` | script/resultados da versão 09 (sintonia lambda/SIMC, faixa ±5% na vazão) |
+| `simulacao/v16/` | script/resultados da versão 16 (sintonia Ziegler-Nichols pelo ganho crítico) |
+| `simulacao/v18/` | script/resultados da versão 18 (controlador amostrado a 50 ms) |
+| `simulacao/v19/` | script/resultados da versão 19 (referência como 2ª entrada, superposição) |
+| `simulacao/v20/` | script/resultados da versão 20 (antes das figuras da v21: linearização, plano s, resposta a um bico com e sem limite) |
+| `simulacao/v21/` | script/resultados da versão 21 (com validação cruzada e quatro métricas: desvio máximo e acomodação) |
+| `simulacao/v24/` | script/resultados da versão 24 (PI+FF sem antecipação) |
+| `simulacao/v11/` | script/resultados da versão 11 (anti-windup também no limite de velocidade; C3 PI 5,0%) |
+| `img/` | figuras dos capítulos 2–3 (fluxograma e ensaio da bancada vêm do artigo) |
+| `build/` | conversão para Word e modelo da UNEMAT |
+| `docs/NN.docx`, `docs/NN.pdf` | versões geradas para entrega |
 
-> **DN = valor físico direto.** Banda 1 é Byte paletado (0 = nodata), mas o índice
-> da paleta É o valor, não um código. Não há `scale`/`offset` porque não precisa.
-> Camadas que exigem 1 casa decimal guardam valor×10 (ver tabela). Calibrado por
-> balanço de massa, não por informação do fornecedor — ver "Calibração".
+## Comandos
 
-| camada | DN → unidade | conferência |
-|---|---|---|
-| `rate_lha` | ×1 → L/ha | ∫DN·área = 9089 L vs 9244.7 L do vetor (1.7%) |
-| `speed_kmh` | **×0.1** → km/h | 173.1 DN vs 17.25 km/h do vetor |
-| `pressure_dbar` | **×0.1** → bar (dbar) | 41.9 DN vs 4.19 do vetor (coluna diz kPa, é bar) |
-| `sensitivity` | ×1 | 2.0 = `sensibilidade` do vetor |
-| `elevation_m` | ×1 → m | 47–192 m |
-| `margin_cm` | ×1 → cm | constante 50 |
-| `cdd`, `var` | ? | unidade não identificada, não usar no texto ainda |
+```
+py -3 simulacao/modelo_barra.py            # → simulacao/resultados.json, simulacao/figuras/
+py -3 build/md2docx.py 20                  # contexto/20.md → build/20_raw.docx
+powershell -File build/post.ps1 -Versao 20 # Word COM: monta equações, sumário, listas → docs/NN.docx/.pdf
+```
 
-Tudo em EPSG:32721 (UTM 21S) — vetor e raster no mesmo CRS, não precisa reprojetar.
+`post.ps1` abre o Word por COM — precisa do Word instalado e fechado. O script da simulação
+tem conferências automáticas (K = 0,425, erros do ajuste, Kg constante, Kg/Kn analíticos = numéricos para todo n,
+ζ e ωn da função de transferência iguais aos especificados); se uma falhar, ele para — não contornar, investigar. Roda em ~3 min.
+Display equation com `\tag{}` sai numerada; sem `\tag` sai como conta sem número (desde a v11).
+Blocos ```python saem com cores de sintaxe.
+Os fluxogramas (Figura 4 e Figuras 13–14 da v16) são `build/fig/*.dot` (`dot -Tpng`); os diagramas das Figuras 11 e 12 são `build/fig/fig06.png`/`fig07.py`.
+Desde a v16 o **Apêndice A** é o `simulacao/modelo_barra.py` inteiro, copiado para o .md por script: mudou o script → regerar o apêndice (blocos de código do apêndice saem sem keepNext).
 
-**A camada `app` é categórica, não contínua.** Só 4–5 DNs, os mesmos em todos os 13 voos:
-`{1, 250, 214, 179, 125}`. Ordenados por área decrescente e por taxa média crescente —
-consistente com nº de sobreposições (1×, 2×, 3×, 4×, 5×), mas o mapeamento DN→classe
-não está em lugar nenhum do pacote. Confirmar com o fornecedor antes de usar no texto.
-`margin_cm` é constante (DN 50) em todo o voo.
+## Convenções do texto
+
+- Nova versão = copiar `contexto/NN.md` para `NN+1.md`, editar, e registrar o que mudou em
+  "NOTAS DE REVISÃO" (seção A<NN>). Mudou o script → rerodar e atualizar todas as tabelas,
+  o Resumo/Abstract e a Conclusão com os números novos.
+- Pressão em **kgf/cm²** (como na fonte), vazão em L/min. 1 kgf/cm² = 0,9807 bar.
+- Citação ABNT autor-data. Marcar pendências como `[REF. PENDENTE]` / `[A CONFERIR]`.
+- Linguagem simples, cada termo explicado na primeira vez, mas **impessoal e sem gíria**
+  (a banca cobrou "decorando", "repare que", aspas coloquiais).
+- Cenários: C1 (um bico por vez), C2 (sequência do ensaio de Rosa), C3 (aleatório).
+  O C4 (erro de modelo) foi retirado na v13 por estar fora do escopo; não reintroduzir.
+- Desde a v10: artigo base único é Rosa, Terra e Drews Jr (2019); Steward e Humburg só como
+  uma frase em 2.6. Controle = P → PI → PI+FF, com o feedforward antecipado em 0,2 s desde a v25 (T_ANT no script; o FF sem antecipação só como comparação e na Fig. 22). Desde a v17 a sintonia é por **alocação de polos**
+  (Ogata 5-3: ζ = 0,7, t_s = 0,5 s → Kc 0,827, Ti 0,084; P com o mesmo Kc). Ziegler-Nichols foi
+  retirado por erro conceitual (planta de 1ª ordem: sem curva em S e sem oscilação contínua) e
+  não deve ser mencionado no texto. Desde a v19 o sensor e o controlador leem a pressão **em tempo real** (a cada passo de 1 ms, sem amostragem; não reintroduzir T_s nem K_c,lim). Desde a v20 a malha em Laplace tem só o distúrbio ΔN, com a referência fixa (a 2ª entrada e a superposição da v18 saíram; não reintroduzir); Kg e Kn vêm da derivada implícita dP/dC (3.5.2). A parte de controle se apoia em Ogata (2010) e Castrucci, Bittar e Sales (2018) (`referencias base/castrucci.epub`, texto em `Castrucci_2018_Controle_Automatico.md`; o e-book não tem página: citar por seção). Faixa = ±10% na pressão (ISO 16122-2, 4.5.4).
+  Sensor sem ruído (o número do teste de ruído saiu do texto na v20).
+- Desde a v11: fórmulas de fluidos citadas pelo Brunetti (2008) (mapa em `contexto/Brunetti_2008_formulas.md`);
+  uma equação por número; contas encadeadas vão em linhas `$$…$$` sem número, não no texto corrido.
+- Desde a v12: anti-windup = integração condicional só no limite de posição (FERNANDES; GOLDEMBERG, 2001,
+  `referencias base/Técnicas Anti-Windup (2001).pdf`).
+- Testes avulsos citados no texto (H6 com mangueira, passo de 2/10 ms) ficam fora do script;
+  mudou o controlador → refazê-los (`py -3 simulacao/testes_avulsos.py`, ~5 min; último: v19; anti-windup em `simulacao/teste_antiwindup.py`).
+- Parâmetros **estimados** (τa, ωmax, curva da válvula) devem aparecer como estimados; não
+  apresentar resultado dinâmico como validado.
+
+## Fora da monografia (mesmo repositório)
+
+- `scripts/`, `guides/`, `dev_logs/`: pipeline de logs de máquinas Weedit (John Deere e
+  Jacto 3030/4530). Cada script tem um `*_explicado.md`. Não entra no texto do TCC atual
+  (seria a "validação com registros de campo" dos trabalhos futuros).
+- `dados/` (fora do git) + `check.py`: voos de pulverização (QField `.gpkg` + GeoTIFF COG,
+  EPSG:32721). Armadilhas já resolvidas: o DN do raster é o valor físico (paletado, 0 =
+  nodata; `speed_kmh` e `pressure_dbar` guardam ×10); a calibração por balanço de massa
+  precisa somar **todos** os ids de voo da data; `taxa (L/ha)` do vetor é o setpoint, não o
+  aplicado; a camada `app` é categórica e o significado das classes não foi confirmado.
+  `check.py` é o smoke test desses dados.
 
 ## Ferramentas
 
-Já instalado: `geopandas`, `shapely`, `rasterio`, `rasterstats`, `numpy`, `pandas`,
-`matplotlib`, `osgeo.gdal`, e o CLI `gdalinfo`/`gdal_translate`.
-
-Instalar com `pip install --user --break-system-packages` (o ambiente é PEP 668).
-
-Não usar: `rioxarray`/`xarray`/`dask` (raster de 74 MB cabe na RAM, overhead sem ganho),
-`pyqgis` (não precisa do QGIS pra ler `.gpkg`/`.tif`), `folium` (matplotlib basta pra TCC).
-
-Padrões:
-- estatística por talhão → `rasterstats.zonal_stats(gdf, tif, stats=[...])`
-- recorte por polígono → `rasterio.mask.mask(src, geoms, crop=True)`
-- visualizar rápido → ler overview: `src.read(1, out_shape=(1, h//16, w//16))`
-
-## Calibração DN → unidade física
-
-Resolvida por **balanço de massa** (2026-08-19), sem depender do fornecedor: a soma
-`Σ DN · área_do_pixel` sobre os dois rasters `rate_lha` de 09/09 dá 9088.9 L contra
-9244.7 L de `volume (L)` do `Spraying.gpkg` → fator 1.017. A área também fecha:
-278.79 ha de raster contra 283.82 ha de `total de hectares (ha)`. A folga de ~1.8%
-é borda/sobreposição. Logo DN = L/ha, ×1.
-
-Armadilha que custou tempo: o pacote de 09/09 tem **dois** rasters (dois ids de voo,
-`6vb7jxf21v` e `6vb7qjnnn9`) e um `Spraying.gpkg` que cobre os dois. Somar só um dá
-fator 1.77 e parece que existe escala escondida. Sempre agregar todos os ids da data.
-
-Colunas do vetor que NÃO servem de referência:
-- `taxa (L/ha)` = 89.8 constante — é o setpoint, não o aplicado.
-- `hectares aplicados (ha)` (Σ 29.5) — área com bico aberto no modo Localizada PWM,
-  não a área coberta pelo voo. Usar `total de hectares (ha)` pra comparar com raster.
-
-`.../qfield_project(1)/` é cópia idêntica de `.../qfield_project/` — ignorar.
-
-## Checagem
-
-`python3 check.py` — smoke test da pilha (vetor+raster, CRS, zonal stats) e do
-balanço de massa que sustenta a calibração DN→L/ha.
+Python 3 via `py -3` (Windows). Simulação usa só `numpy` e `matplotlib` — manter assim
+(o texto diz que não há biblioteca de controle). Para os dados geoespaciais: `geopandas`,
+`rasterio`, `rasterstats`; instalar com `pip install --user`.

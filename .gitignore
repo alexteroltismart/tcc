@@ -1,3 +1,4 @@
 dados/
 *.tif.aux.xml
 __pycache__/
+*.stackdump
