@@ -1,0 +1,576 @@
+"""Monta a apresentação da banca (TCC v15) sobre o modelo institucional da UNEMAT."""
+import copy
+from pathlib import Path
+
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from pptx import Presentation
+from pptx.chart.data import CategoryChartData
+from pptx.dml.color import RGBColor
+from pptx.enum.chart import XL_CHART_TYPE, XL_LEGEND_POSITION, XL_LABEL_POSITION
+from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import PP_ALIGN, MSO_ANCHOR
+from pptx.oxml.ns import qn
+from pptx.util import Inches, Pt, Emu
+
+AQUI = Path(__file__).parent
+TCC = Path("D:/tech/tcc")
+EQ = AQUI / "eq"; EQ.mkdir(exist_ok=True)
+
+NAVY = RGBColor(0x1B, 0x35, 0x57)
+GREEN = RGBColor(0x1E, 0x7B, 0x3C)
+ORANGE = RGBColor(0xE8, 0x8A, 0x0C)
+INK = RGBColor(0x26, 0x2B, 0x33)
+MUTED = RGBColor(0x5B, 0x66, 0x70)
+TINT = RGBColor(0xEE, 0xF4, 0xF8)
+WHITE = RGBColor(0xFF, 0xFF, 0xFF)
+FONT = "Calibri"
+
+prs = Presentation(str(AQUI / "base.pptx"))
+SW, SH = prs.slide_width, prs.slide_height
+slides = list(prs.slides)
+assert len(slides) == 20, len(slides)
+cont = iter(slides[1:])
+
+
+# ---------------------------------------------------------------- helpers
+def eq_png(nome, tex, size=22, color="#1B3557"):
+    """Equação LaTeX (mathtext) → PNG transparente; devolve (caminho, largura_pol, altura_pol)."""
+    plt.rcParams["mathtext.fontset"] = "cm"
+    fig = plt.figure(figsize=(0.01, 0.01))
+    fig.text(0, 0, f"${tex}$", fontsize=size, color=color)
+    out = EQ / f"{nome}.png"
+    plt.rcParams["mathtext.fontset"] = "cm"
+    fig.savefig(out, dpi=300, transparent=True, bbox_inches="tight", pad_inches=0.04)
+    plt.close(fig)
+    from PIL import Image
+    w, h = Image.open(out).size
+    return out, w / 300, h / 300
+
+
+def add_eq(slide, nome, tex, x, y, size=22, max_w=None, color="#1B3557"):
+    p, w, h = eq_png(nome, tex, size, color)
+    if max_w and w > max_w:
+        h, w = h * max_w / w, max_w
+    pic = slide.shapes.add_picture(str(p), Inches(x), Inches(y), Inches(w), Inches(h))
+    pic.name = f"Eq {nome}"
+    return w, h
+
+
+def _bullet(p, char="•", color=GREEN, level=0):
+    pPr = p._p.get_or_add_pPr()
+    pPr.set("marL", str(Emu(Inches(0.28 + 0.3 * level))))
+    pPr.set("indent", str(-Emu(Inches(0.24))))
+    for tag in ("a:buNone", "a:buChar", "a:buAutoNum"):
+        for el in pPr.findall(qn(tag)):
+            pPr.remove(el)
+    buClr = pPr.makeelement(qn("a:buClr"), {})
+    srgb = buClr.makeelement(qn("a:srgbClr"), {"val": str(color)})
+    buClr.append(srgb)
+    pPr.append(buClr)
+    bu = pPr.makeelement(qn("a:buChar"), {"char": char})
+    pPr.append(bu)
+
+
+def text(slide, x, y, w, h, items, size=16, color=INK, anchor=MSO_ANCHOR.TOP, name="Texto", align=PP_ALIGN.LEFT):
+    """items: lista de str ou dicts {t, b, c, s, bullet, runs, space}."""
+    tb = slide.shapes.add_textbox(Inches(x), Inches(y), Inches(w), Inches(h))
+    tb.name = name
+    tf = tb.text_frame
+    tf.word_wrap = True
+    tf.vertical_anchor = anchor
+    tf.margin_left = tf.margin_right = Inches(0.04)
+    tf.margin_top = tf.margin_bottom = Inches(0.02)
+    first = True
+    for it in items:
+        if isinstance(it, str):
+            it = {"t": it}
+        p = tf.paragraphs[0] if first else tf.add_paragraph()
+        first = False
+        p.alignment = it.get("align", align)
+        p.space_after = Pt(it.get("space", 6))
+        runs = it.get("runs") or [(it.get("t", ""), it.get("b", False), it.get("c", color))]
+        for rt, rb, rc in runs:
+            r = p.add_run()
+            r.text = rt
+            f = r.font
+            f.name = FONT; f.size = Pt(it.get("s", size)); f.bold = rb; f.color.rgb = rc
+            f.italic = it.get("i", False)
+        if it.get("bullet"):
+            _bullet(p, level=it.get("level", 0))
+    return tb
+
+
+def title(slide, t, sub=None):
+    text(slide, 0.6, 1.62, 12.1, 0.62, [{"t": t, "b": True, "s": 30, "c": NAVY}], name="Título",
+         anchor=MSO_ANCHOR.MIDDLE)
+    if sub:
+        text(slide, 0.62, 2.22, 12.0, 0.4, [{"t": sub, "s": 16, "c": MUTED, "i": True}], name="Subtítulo")
+
+
+def box(slide, x, y, w, h, fill=TINT, name="Cartão", line=None):
+    s = slide.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(x), Inches(y), Inches(w), Inches(h))
+    s.name = name
+    s.adjustments[0] = 0.06
+    s.fill.solid(); s.fill.fore_color.rgb = fill
+    if line:
+        s.line.color.rgb = line; s.line.width = Pt(1.25)
+    else:
+        s.line.fill.background()
+    s.shadow.inherit = False
+    return s
+
+
+def stat(slide, x, y, w, big, label, color=GREEN, big_size=40):
+    box(slide, x, y, w, 1.35, name=f"Destaque {label[:12]}")
+    text(slide, x + 0.1, y + 0.08, w - 0.2, 0.75, [{"t": big, "b": True, "s": big_size, "c": color, "align": PP_ALIGN.CENTER}],
+         name="Número", anchor=MSO_ANCHOR.MIDDLE)
+    text(slide, x + 0.1, y + 0.82, w - 0.2, 0.48, [{"t": label, "s": 13, "c": MUTED, "align": PP_ALIGN.CENTER}],
+         name="Rótulo")
+
+
+def image(slide, path, x, y, w=None, h=None, name="Figura"):
+    from PIL import Image
+    iw, ih = Image.open(path).size
+    if w and not h:
+        h = w * ih / iw
+    elif h and not w:
+        w = h * iw / ih
+    pic = slide.shapes.add_picture(str(path), Inches(x), Inches(y), Inches(w), Inches(h))
+    pic.name = name
+    return w, h
+
+
+def caption(slide, x, y, w, t):
+    text(slide, x, y, w, 0.3, [{"t": t, "s": 11, "c": MUTED, "i": True}], name="Fonte")
+
+
+def style_chart(ch, legend=True):
+    ch.font.name = FONT; ch.font.size = Pt(12); ch.font.color.rgb = INK
+    ch.has_legend = legend
+    if legend:
+        ch.legend.position = XL_LEGEND_POSITION.BOTTOM
+        ch.legend.include_in_layout = False
+        ch.legend.font.size = Pt(12)
+    va = ch.value_axis
+    va.has_major_gridlines = True
+    va.major_gridlines.format.line.color.rgb = RGBColor(0xDD, 0xE3, 0xE8)
+    va.format.line.fill.background()
+    va.tick_labels.font.size = Pt(12); va.tick_labels.font.color.rgb = MUTED
+    ca = ch.category_axis
+    ca.tick_labels.font.size = Pt(12); ca.tick_labels.font.color.rgb = MUTED
+    ca.format.line.color.rgb = RGBColor(0xBB, 0xC4, 0xCC)
+
+
+def notes(slide, t):
+    slide.notes_slide.notes_text_frame.text = t
+
+
+IMG = TCC / "img"; FIGS = TCC / "simulacao/figuras"; BFIG = TCC / "build/fig"
+
+# ================================================================ 1. título
+s = next(cont)
+text(s, 0.9, 1.95, 11.5, 1.5, [{"t": "Modelagem de sistema de controle para pulverização agrícola de precisão",
+                                "b": True, "s": 36, "c": NAVY}], name="Título", anchor=MSO_ANCHOR.MIDDLE)
+text(s, 0.9, 3.45, 11.5, 0.6, [{"t": "Controle da pressão de uma barra bico a bico com válvula de alívio, modelo de resistência fluídica e simulação",
+                                "s": 20, "c": GREEN, "i": True}], name="Subtítulo")
+text(s, 0.9, 4.55, 7.5, 1.9, [
+    {"t": "Alex de Jesus Terolti", "b": True, "s": 22, "c": INK},
+    {"t": "Orientador: Prof. Dr. Rogério Bastos Quirino", "s": 18, "c": INK},
+    {"t": "Bacharelado em Engenharia Elétrica · UNEMAT, câmpus de Sinop", "s": 16, "c": MUTED},
+    {"t": "Trabalho de Conclusão de Curso II", "s": 16, "c": MUTED}], name="Autor")
+notes(s, "Apresentar-se, o orientador e o tema: manter a pressão de uma barra de pulverização bico a bico usando uma válvula de alívio, com um modelo simples e controladores clássicos, tudo em simulação.")
+
+# ================================================================ 2. problema
+s = next(cont)
+title(s, "O problema: a pressão muda quando os bicos trocam")
+text(s, 0.6, 2.65, 5.6, 4.4, [
+    {"t": "Na pulverização localizada, cada bico abre e fecha sozinho.", "bullet": True},
+    {"t": "Com alimentação em série, uma mangueira alimenta todos os bicos: quando bicos fecham, sobra líquido e a pressão sobe.", "bullet": True},
+    {"t": "Na bancada de Rosa, Terra e Drews Jr (2019), a pressão foi de 3,57 para 5,58 kgf/cm² (+56%) ao fechar seis dos sete bicos.", "bullet": True},
+    {"t": "Pressão errada muda a vazão de cada bico (q ∝ √P) e o tamanho das gotas: sobredose, subdose e deriva.", "bullet": True},
+], size=17)
+image(s, IMG / "fig05_ensaio.png", 7.55, 2.45, h=4.45, name="Ensaio de regulação")
+caption(s, 7.3, 6.93, 5.5, "Ensaio de regulação da pressão pela válvula de alívio. Fonte: Rosa, Terra e Drews Jr (2019).")
+notes(s, "Motivação. O controle bico a bico economiza produto, mas cada troca de bico muda a pressão dos outros. A figura é o ensaio da bancada de referência: fechando três bicos a pressão sobe de 4,0 para 5,8, e abrindo a válvula à mão ela volta; com a válvula fechada, de 7 para 1 bico, a pressão sobe 56%. Como a vazão do bico varia com a raiz da pressão, isso muda a dose.")
+
+# ================================================================ 3. objetivo e hipótese
+s = next(cont)
+title(s, "Objetivo e hipótese")
+box(s, 0.6, 2.55, 7.3, 1.75, name="Hipótese")
+text(s, 0.85, 2.65, 6.9, 1.6, [
+    {"t": "Hipótese", "b": True, "s": 18, "c": NAVY},
+    {"t": "Um modelo de resistências fluídicas, com os bicos em paralelo, a curva da bomba e a válvula de alívio, mais a dinâmica da válvula, basta para projetar um controlador simples que mantenha a pressão dentro de ±10% da referência.", "s": 16}],
+    name="Texto hipótese")
+text(s, 0.6, 4.5, 7.4, 2.6, [
+    {"t": "Objetivos específicos", "b": True, "s": 18, "c": NAVY},
+    {"t": "Modelar pressão × vazão × número de bicos e comparar com os dados publicados", "bullet": True},
+    {"t": "Acrescentar a dinâmica da válvula (curso e velocidade limitados)", "bullet": True},
+    {"t": "Sintonizar P e PI por Ziegler-Nichols e acrescentar o feedforward", "bullet": True},
+    {"t": "Comparar os controladores em simulação", "bullet": True}], size=16)
+stat(s, 8.5, 2.55, 4.2, "±10%", "tolerância de pressão adotada\nISO 16122-2:2015, item 4.5.4", color=ORANGE, big_size=54)
+stat(s, 8.5, 4.15, 4.2, "≈ ±5%", "na vazão de cada bico, porque\nq = K·√P (√0,9 ≈ 0,95)", color=GREEN, big_size=44)
+text(s, 8.5, 5.75, 4.2, 1.2, [{"t": "Tudo em simulação, com parâmetros ajustados à bancada de 7 bicos de Rosa, Terra e Drews Jr (2019).", "s": 14, "c": MUTED, "i": True}],
+     name="Escopo")
+notes(s, "A hipótese é que um modelo simples basta para projetar um controlador que segure a pressão dentro de ±10%, a tolerância da norma de inspeção de pulverizadores. ±10% na pressão dá cerca de ±5% na vazão do bico.")
+
+# ================================================================ 4. roteiro
+s = next(cont)
+title(s, "Roteiro do trabalho em sete etapas")
+w, h = image(s, BFIG / "fig_etapas.png", 0.6, 2.45, h=4.6, name="Figura etapas")
+text(s, 0.75 + w, 2.6, 12.7 - (0.75 + w), 4.4, [
+    {"t": "Cada etapa entrega a entrada da seguinte.", "b": True, "s": 17, "c": NAVY},
+    {"t": "O modelo estático é a base: dá a pressão para qualquer número de bicos e abertura da válvula.", "bullet": True},
+    {"t": "Ele é reaproveitado no simulador e no projeto do controle.", "bullet": True},
+    {"t": "Tudo roda num único programa em Python (numpy e matplotlib), com conferências automáticas.", "bullet": True}], size=16)
+notes(s, "Esta é a ordem da apresentação: dados da bancada, modelo estático, modelo dinâmico, abertura de equilíbrio e ganho da planta, controladores e sintonia, simulação e avaliação. O programa em Python executa essas etapas em sequência.")
+
+# ================================================================ 5. bancada
+s = next(cont)
+title(s, "Bancada de referência (Rosa, Terra e Drews Jr, 2019)")
+image(s, IMG / "overview barra.png", 0.6, 2.55, w=6.2, name="Foto bancada")
+caption(s, 0.6, 2.55 + 6.2 / 3.69 + 0.02, 6.2, "Barra de 5 m com sete bicos. Fonte: Rosa, Terra e Drews Jr (2019).")
+image(s, IMG / "fig04_fluxograma.png", 0.6, 4.75, w=4.8, name="Fluxograma bancada")
+caption(s, 0.6, 4.75 + 4.8 / 2.19 + 0.02, 4.8, "Fluxograma de processo. Fonte: Rosa, Terra e Drews Jr (2019).")
+text(s, 7.2, 2.5, 5.6, 1.6, [
+    {"t": "Bomba de pistão de 14 L/min com válvula de mola (PCV)", "bullet": True, "space": 3},
+    {"t": "Sete bicos FanTip 0,2/110° com solenoide", "bullet": True, "space": 3},
+    {"t": "Válvula agulha de alívio (HV) com servomotor: o atuador", "bullet": True, "space": 3}], size=15)
+dados = [("n", "P [kgf/cm²]", "Q [L/min]", "P/Q²"),
+         ("7", "3,57", "5,60", "0,114"), ("6", "3,88", "5,07", "0,151"), ("5", "4,24", "4,40", "0,219"),
+         ("4", "4,64", "3,60", "0,358"), ("3", "4,96", "2,80", "0,633"), ("2", "5,27", "2,00", "1,318"),
+         ("1", "5,58", "1,00", "5,580")]
+gt = s.shapes.add_table(len(dados), 4, Inches(7.2), Inches(4.12), Inches(5.55), Inches(2.6))
+gt.name = "Tabela dados Rosa"
+tab = gt.table
+for c, wc in enumerate((0.85, 1.75, 1.55, 1.4)):
+    tab.columns[c].width = Inches(wc)
+for r, linha in enumerate(dados):
+    tab.rows[r].height = Inches(0.32)
+    for c, v in enumerate(linha):
+        cell = tab.cell(r, c); cell.text = v
+        cell.margin_top = cell.margin_bottom = Inches(0.02)
+        p = cell.text_frame.paragraphs[0]; rn = p.runs[0]
+        rn.font.size = Pt(13); rn.font.name = FONT; rn.font.bold = (r == 0)
+        rn.font.color.rgb = WHITE if r == 0 else INK
+        p.alignment = PP_ALIGN.CENTER
+        cell.fill.solid(); cell.fill.fore_color.rgb = NAVY if r == 0 else (TINT if r % 2 else WHITE)
+caption(s, 7.2, 6.77, 5.55, "Válvula de alívio fechada. Fonte: Rosa, Terra e Drews Jr (2019), Tabela 1.")
+notes(s, "A bancada foi escolhida porque é uma barra bico a bico em série, tem dados publicados de pressão e vazão e já usa uma válvula de alívio. A tabela traz os dados usados para ajustar o modelo: com a válvula fechada, fechando bicos a pressão sobe e a vazão cai, e a resistência P/Q² cresce muito depressa. Os autores ajustaram a válvula à mão e deixaram o controle automático como trabalho futuro.")
+
+# ================================================================ 6. modelo estático
+s = next(cont)
+title(s, "Modelo estático: balanço de vazões num nó de pressão")
+image(s, BFIG / "fig06.png", 0.6, 2.5, w=12.1, name="Circuito equivalente")
+y0 = 2.5 + 12.1 / 6.32 + 0.25
+cards = [("Bico (lei de orifício)", "q = K\\sqrt{P}", "K = 0,425 (média da Tabela 1)"),
+         ("Fonte (bomba + PCV)", "P = a_2 Q_s^2 + a_1 Q_s + a_0", "mínimos quadrados, R² = 0,9999"),
+         ("Válvula de alívio", "Q_v = K_{v,max}\\,\\alpha\\,\\sqrt{P}", "linear na abertura (H5)")]
+for i, (cab, tex, rod) in enumerate(cards):
+    x = 0.6 + i * 4.1
+    box(s, x, y0, 3.9, 1.65, name=f"Cartão {cab}")
+    text(s, x + 0.15, y0 + 0.08, 3.6, 0.4, [{"t": cab, "b": True, "s": 15, "c": NAVY}], name="Cabeçalho")
+    add_eq(s, f"est{i}", tex, x + 0.2, y0 + 0.55, size=20, max_w=3.5)
+    text(s, x + 0.15, y0 + 1.2, 3.6, 0.4, [{"t": rod, "s": 12, "c": MUTED}], name="Nota")
+box(s, 0.6, y0 + 1.85, 12.1, 0.95, fill=RGBColor(0xE6, 0xF2, 0xEA), name="Balanço")
+text(s, 0.8, y0 + 1.92, 4.2, 0.8, [{"t": "Equilíbrio no nó, resolvido por bissecção:", "b": True, "s": 15, "c": GREEN}],
+     anchor=MSO_ANCHOR.MIDDLE, name="Balanço texto")
+add_eq(s, "balanco", "Q_s(P) = \\left(n\\,K + K_{v,max}\\,\\alpha\\right)\\sqrt{P}", 5.2, y0 + 2.0, size=22, max_w=7.2)
+notes(s, "Três caminhos se encontram num único nó de pressão: a fonte empurra líquido, os bicos e a válvula deixam sair. Em regime, entra = sai. Essa equação não tem solução direta para P e é resolvida por bissecção. Hipóteses: escoamento permanente, perda na barra desprezível, bicos iguais, fonte de segundo grau, válvula linear.")
+
+# ================================================================ 7. R1/n²
+s = next(cont)
+title(s, "Resistência equivalente da barra: modelo R₁/n²")
+box(s, 0.6, 2.55, 6.0, 1.55, name="Equação R1n2")
+add_eq(s, "r1n2", "R_{eq}(n) = \\frac{R_1}{n^2}, \\qquad R_1 = \\frac{1}{K^2}", 0.95, 2.72, size=26, max_w=5.4)
+text(s, 0.6, 4.3, 6.0, 2.7, [
+    {"t": "n bicos iguais em paralelo: a resistência de um bico dividida por n²", "bullet": True},
+    {"t": "Dobrar os bicos abertos divide a resistência por quatro", "bullet": True},
+    {"t": "Substitui a fórmula empírica de Rosa et al. (quatro coeficientes sem significado físico) por um único parâmetro físico, K", "bullet": True}], size=16)
+image(s, FIGS / "a_resistencia_n.png", 7.45, 2.45, h=3.2, name="Gráfico resistência")
+stat(s, 6.95, 5.75, 2.8, "5,9%", "erro máximo do modelo R₁/n²", color=GREEN, big_size=30)
+stat(s, 9.95, 5.75, 2.8, "18,5%", "erro da fórmula empírica (n = 7)", color=ORANGE, big_size=30)
+notes(s, "A contribuição do modelo estático: com n bicos em paralelo, a resistência equivalente é a de um bico dividida por n ao quadrado. Um único parâmetro físico substitui uma fórmula empírica de quatro coeficientes. O erro relativo máximo foi 5,9%, contra 18,5% da fórmula empírica.")
+
+# ================================================================ 8. validação
+s = next(cont)
+title(s, "O modelo estático reproduz os dados medidos")
+for i, (big, lab, cor) in enumerate([("0,7%", "erro máximo na pressão", GREEN), ("2,3%", "erro máximo na vazão", GREEN),
+                                     ("0,9% | 2,7%", "validação cruzada (deixa um de fora)", NAVY)]):
+    stat(s, 0.6, 2.55 + i * 1.5, 4.0, big, lab, color=cor, big_size=36 if i < 2 else 30)
+image(s, FIGS / "b_fonte_carga.png", 4.95, 2.5, h=3.75, name="Fonte e carga")
+text(s, 10.05, 2.6, 2.75, 3.6, [
+    {"t": "Regra de projeto", "b": True, "s": 16, "c": NAVY},
+    {"t": "A válvula de alívio só baixa a pressão: a referência tem de ficar abaixo do que a fonte sustenta com 7 bicos (3,56 kgf/cm²).", "s": 14},
+    {"t": "Adotado: Pref = 3,5 kgf/cm²", "b": True, "s": 15, "c": ORANGE}], name="Regra de projeto")
+caption(s, 4.95, 6.3, 5.0, "Cruzamento da curva da fonte com as curvas de carga = ponto de operação.")
+notes(s, "Com a constante do bico e a curva da fonte, o modelo reproduziu os sete pontos com erro de até 0,7% na pressão e 2,3% na vazão; prevendo cada ponto sem usá-lo no ajuste, 0,9% e 2,7%. Uma consequência: como a válvula só alivia, a referência tem de ficar abaixo de 3,56; foi escolhido 3,5.")
+
+# ================================================================ 9. modelo dinâmico
+s = next(cont)
+title(s, "Modelo dinâmico: a pressão é instantânea, a válvula demora")
+# coluna esquerda: H6
+box(s, 0.6, 2.5, 6.35, 2.2, name="H6")
+text(s, 0.82, 2.56, 6.0, 0.4, [{"t": "1. Pressão instantânea (hipótese H6)", "b": True, "s": 16, "c": NAVY}], name="Cab H6")
+add_eq(s, "merritt", "\\sum Q_{ent} - \\sum Q_{sai} = \\frac{V}{\\beta}\\,\\frac{dP}{dt}", 0.95, 3.0, size=22, max_w=4.2)
+text(s, 0.82, 3.72, 6.0, 0.95, [
+    {"t": "Mangueira curta (5 m) e cheia: V/β pequeno, a pressão acompanha a válvula quase na hora (Merritt, 1967, p. 53). A cada instante, P = equilíbrio do modelo estático.", "s": 13, "space": 2},
+    {"t": "Conferido com a mangueira modelada: diferença ≤ 0,6 ponto percentual.", "s": 13, "c": GREEN, "b": True}], name="Texto H6")
+# coluna esquerda: válvula
+box(s, 0.6, 4.85, 6.35, 2.2, name="Válvula")
+text(s, 0.82, 4.91, 6.0, 0.4, [{"t": "2. Válvula de primeira ordem com velocidade limitada", "b": True, "s": 16, "c": NAVY}], name="Cab válvula")
+add_eq(s, "valvula", "\\frac{d\\alpha}{dt} = \\frac{\\alpha_c - \\alpha}{\\tau_a}, \\qquad \\left|\\frac{d\\alpha}{dt}\\right| \\leq \\omega_{max}, \\qquad 0 \\leq \\alpha \\leq 1", 0.95, 5.33, size=20, max_w=5.8)
+text(s, 0.82, 6.1, 6.0, 0.95, [
+    {"t": "Longe do comando: rampa, a 0,5 por segundo. Perto: aproximação exponencial, τa = 0,2 s.", "s": 13, "space": 2},
+    {"t": "τa e ωmax são estimados (a bancada não informa a velocidade da válvula).", "s": 13, "c": ORANGE, "i": True}], name="Texto válvula")
+# coluna direita: gráfico + passo a passo
+image(s, IMG / "valv agulha.png", 8.05, 2.45, h=3.2, name="Válvula agulha")
+caption(s, 7.4, 5.7, 5.4, "Válvula agulha de 1/4\" com servomotor (o atuador). Fonte: Rosa, Terra e Drews Jr (2019).")
+box(s, 7.25, 6.2, 5.5, 0.85, fill=RGBColor(0xE6, 0xF2, 0xEA), name="Passo a passo")
+text(s, 7.4, 6.22, 5.25, 0.8, [
+    {"t": "A cada 1 ms (Euler):", "b": True, "s": 13, "c": GREEN, "space": 1},
+    {"t": "controlador a cada 50 ms → válvula: αk+1 = αk + Δt·(dα/dt) → pressão pela bissecção", "s": 13}],
+    name="Texto passo a passo", anchor=MSO_ANCHOR.MIDDLE)
+notes(s, "A dinâmica tem duas partes. Primeiro, a pressão: pela continuidade com compressibilidade, a pressão só demora para mudar por causa do termo V sobre beta, a capacitância da linha. Como a mangueira é curta e cheia, esse termo é pequeno e a pressão foi tratada como instantânea; conferi com um modelo que inclui a mangueira e a diferença foi de no máximo 0,6 ponto percentual. Segundo, a válvula: ela segue um sistema de primeira ordem, com constante de tempo de 0,2 segundo, mas o motor tem velocidade máxima de 0,5 por segundo. Por exemplo, quando três bicos fecham, a abertura precisa subir 0,36: a válvula anda meio segundo em rampa e depois se aproxima do comando, cerca de 0,7 segundo só para ela chegar. Esses dois parâmetros são estimados. A simulação avança de 1 em 1 milissegundo pelo método de Euler.")
+
+# ================================================================ 10. estratégia de controle
+s = next(cont)
+title(s, "Estratégia de controle: P, PI e PI com feedforward")
+image(s, BFIG / "fig07.png", 0.6, 2.45, w=7.4, name="Diagrama de blocos")
+text(s, 0.6, 2.45 + 7.4 / 2.32 + 0.1, 7.4, 1.0, [
+    {"t": "Erro e = P − Pref: abrir a válvula baixa a pressão. Controlador amostrado a cada Ts = 50 ms; anti-windup por integração condicional no limite de posição (Fernandes; Goldemberg, 2001).",
+     "s": 13, "c": MUTED}], name="Nota erro")
+for i, (cab, tex, rod, cor) in enumerate([
+        ("P", "\\alpha_c = \\alpha_0 + K_c\\,e", "abertura fixa α₀ = 0,023", GREEN),
+        ("PI", "\\alpha_c = \\alpha_0 + K_c\\left(e + \\frac{1}{T_i}\\int e\\,dt\\right)", "a integral zera o erro", NAVY),
+        ("PI + FF", "\\alpha_c = \\alpha_{ff}(n) + K_c\\left(e + \\frac{1}{T_i}\\int e\\,dt\\right)", "abertura antecipada pelo nº de bicos", ORANGE)]):
+    y = 2.5 + i * 1.5
+    box(s, 8.3, y, 4.45, 1.35, name=f"Cartão {cab}")
+    text(s, 8.45, y + 0.06, 4.2, 0.35, [{"t": cab, "b": True, "s": 16, "c": cor}], name="Cab")
+    add_eq(s, f"ctl{i}", tex, 8.5, y + 0.45, size=17, max_w=4.1)
+    text(s, 8.45, y + 0.98, 4.2, 0.33, [{"t": rod, "s": 12, "c": MUTED}], name="Nota")
+notes(s, "A pressão é a variável controlada, a abertura da válvula a manipulada e o número de bicos a perturbação. Três controladores, cada um acrescentando algo: P, PI e PI com feedforward, em que a abertura antecipada vem do próprio modelo estático. A ação derivativa ficou de fora: amplifica ruído, o salto de pressão vira pico, e o Td de Ziegler-Nichols seria menor que o período de amostragem.")
+
+# ================================================================ 11. alpha_ff e Kg
+s = next(cont)
+title(s, "O modelo estático dá o feedforward e o ganho da planta")
+box(s, 0.6, 2.55, 6.0, 4.45, name="Alpha ff")
+text(s, 0.85, 2.65, 5.6, 0.45, [{"t": "Abertura de equilíbrio", "b": True, "s": 18, "c": NAVY}], name="Cab aff")
+add_eq(s, "aff", "\\alpha_{ff}(n) = \\frac{1}{K_{v,max}}\\left[\\frac{Q_s(P_{ref})}{\\sqrt{P_{ref}}} - n\\,K\\right]", 0.9, 3.15, size=26, max_w=5.4)
+text(s, 0.85, 4.35, 5.6, 2.5, [
+    {"t": "Uma reta: cada bico que fecha pede +0,121 de abertura", "bullet": True},
+    {"t": "7 bicos: 0,023 · 1 bico: 0,752", "bullet": True},
+    {"t": "É o compensador ideal Gd/Gp em regime (Liu et al., 2018)", "bullet": True}], size=15)
+box(s, 6.95, 2.55, 5.8, 4.45, name="Kg")
+text(s, 7.2, 2.65, 5.4, 0.45, [{"t": "Ganho da planta", "b": True, "s": 18, "c": NAVY}], name="Cab kg")
+add_eq(s, "kg", "K_g = \\frac{\\partial P}{\\partial \\alpha} \\approx \\frac{P(\\alpha+0{,}005) - P(\\alpha-0{,}005)}{0{,}01}", 7.25, 3.15, size=24, max_w=5.3)
+text(s, 7.2, 4.15, 5.4, 0.9, [{"t": "−2,66 kgf/cm²", "b": True, "s": 36, "c": ORANGE, "align": PP_ALIGN.CENTER}], name="Valor Kg",
+     anchor=MSO_ANCHOR.MIDDLE)
+text(s, 7.2, 5.1, 5.4, 1.8, [
+    {"t": "Igual para qualquer número de bicos (1 a 7)", "bullet": True},
+    {"t": "Uma única sintonia serve para todos os casos", "bullet": True, "b": True}], size=15)
+notes(s, "Invertendo o modelo estático com P igual à referência, sai a abertura de equilíbrio para cada número de bicos: uma reta, 0,121 por bico. Esse é o feedforward. Derivando o modelo em relação à abertura sai o ganho da planta, −2,66, o mesmo para qualquer número de bicos; por isso uma sintonia serve para todos.")
+
+# ================================================================ 12. ZN
+s = next(cont)
+title(s, "Sintonia de Ziegler-Nichols pelo ganho crítico, no simulador")
+image(s, FIGS / "f_ganho_critico.png", 0.6, 2.45, h=4.55, name="Ensaio ganho crítico")
+tab = s.shapes.add_table(6, 2, Inches(7.55), Inches(2.55), Inches(5.2), Inches(2.9)).table
+rows = [("Grandeza", "Valor"), ("Ganho crítico Kcr", "2,93"), ("Período crítico Pcr", "0,100 s = 2·Ts"),
+        ("P: Kc = 0,5·Kcr", "1,46"), ("PI: Kc = 0,45·Kcr", "1,32"), ("PI: Ti = Pcr/1,2", "0,083 s")]
+for r, (a, b) in enumerate(rows):
+    for c, v in enumerate((a, b)):
+        cell = tab.cell(r, c); cell.text = v
+        p = cell.text_frame.paragraphs[0]; p.runs[0].font.size = Pt(14); p.runs[0].font.name = FONT
+        p.runs[0].font.bold = (r == 0); p.alignment = PP_ALIGN.LEFT if c == 0 else PP_ALIGN.RIGHT
+        p.runs[0].font.color.rgb = WHITE if r == 0 else INK
+        cell.fill.solid(); cell.fill.fore_color.rgb = NAVY if r == 0 else (TINT if r % 2 else WHITE)
+text(s, 7.55, 5.6, 5.2, 1.4, [
+    {"t": "A oscilação vem da amostragem: o controlador corrige demais numa leitura e demais para o outro lado na seguinte.", "s": 14},
+    {"t": "Teoria discreta: Kcr = 3,02 (ensaio 3% abaixo).", "s": 14, "c": MUTED}], name="Por que oscila")
+notes(s, "O segundo método de Ziegler-Nichols foi feito no próprio simulador: só a ação P, um bico fecha e aumenta-se Kc até a oscilação não parar. Bissecção deu Kcr 2,93, com período de 0,1 s, duas leituras do controlador: é a amostragem que limita o ganho. As regras deram os ganhos da tabela. Há também uma página interativa com esse ensaio.")
+
+# ================================================================ 13. função de transferência
+s = next(cont)
+title(s, "Função de transferência da malha (linearizada)")
+box(s, 0.6, 2.5, 6.4, 4.55, name="Equações FT")
+add_eq(s, "gp", "G_P(s) = \\frac{K_n(\\tau_a s + 1)}{\\tau_a s + 1 + K_c|K_g|}", 0.85, 2.65, size=26, max_w=6.0)
+add_eq(s, "gpi", "G_{PI}(s) = \\frac{K_n T_i\\,s\\,(\\tau_a s + 1)}{\\tau_a T_i s^2 + T_i(1 + K_c|K_g|)s + K_c|K_g|}", 0.85, 3.5, size=26, max_w=6.0)
+text(s, 0.85, 4.55, 6.0, 2.4, [
+    {"t": "P: erro final 0,066 kgf/cm² (valor final = Eq. 2.14)", "bullet": True},
+    {"t": "PI: o s no numerador zera o erro", "bullet": True},
+    {"t": "Polos do PI: −11,3 ± j9,1 · ωn = 14,5 rad/s · ζ = 0,78 · ts ≈ 0,36 s", "bullet": True},
+    {"t": "FF muda só o numerador: não altera a estabilidade", "bullet": True}], size=15)
+image(s, FIGS / "g_funcao_transferencia.png", 7.3, 2.45, h=4.6, name="FT x simulador")
+notes(s, "Linearizando em torno de sete bicos, com a válvula sem limite e controlador contínuo, saem as funções de transferência segundo o Ogata. Elas confirmam o erro do P, mostram que o PI zera o erro e que o feedforward não muda a estabilidade. A figura compara com o simulador: o valor final bate; sem limite de velocidade o simulador fica perto; com o limite a válvula anda em rampa e demora mais.")
+
+# ================================================================ 14. cenários e métricas
+s = next(cont)
+title(s, "Cenários de simulação e critério de avaliação")
+for i, (cab, desc, cor) in enumerate([
+        ("C1", "7 → 1 → 7, um bico por vez, a cada 2 s (26 s): toda a faixa de operação", GREEN),
+        ("C2", "Degraus de três bicos, como no ensaio de Rosa (14 s)", NAVY),
+        ("C3", "Um bico sorteado troca a cada 0,1–0,5 s (20 s, 66 trocas): aplicação localizada", ORANGE)]):
+    y = 2.55 + i * 1.45
+    box(s, 0.6, y, 6.6, 1.3, name=f"Cenário {cab}")
+    text(s, 0.75, y + 0.1, 1.1, 1.1, [{"t": cab, "b": True, "s": 30, "c": cor, "align": PP_ALIGN.CENTER}], anchor=MSO_ANCHOR.MIDDLE, name="Rótulo")
+    text(s, 1.95, y + 0.12, 5.1, 1.1, [{"t": desc, "s": 16}], anchor=MSO_ANCHOR.MIDDLE, name="Descrição")
+text(s, 7.6, 2.6, 5.2, 4.4, [
+    {"t": "Métricas", "b": True, "s": 18, "c": NAVY},
+    {"t": "Tempo fora da faixa ±10% (3,15 a 3,85 kgf/cm²)", "bullet": True},
+    {"t": "IAE: área entre P e Pref", "bullet": True},
+    {"t": "Desvio máximo", "bullet": True},
+    {"t": "Acomodação em ±2%", "bullet": True},
+    {"t": "Configurações", "b": True, "s": 18, "c": NAVY},
+    {"t": "Malha aberta, P, PI e PI+FF", "bullet": True},
+    {"t": "C2 e C3 também com a válvula 2× e 4× mais rápida", "bullet": True}], size=16)
+notes(s, "Três cenários, do mais simples ao mais difícil. O critério principal é o tempo fora da faixa de ±10%: com a máquina em velocidade constante, é a fração da área aplicada fora da tolerância.")
+
+# ================================================================ 15. resultados gerais
+s = next(cont)
+title(s, "Resultados: tempo com a pressão fora da faixa")
+cab = ("Cenário", "Configuração", "Tempo fora da faixa", "IAE [kgf/cm²·s]", "Desvio máximo", "Acomodação média (±2%)")
+# (valores, colunas em negrito) — mesmo destaque da Tabela 10 do TCC
+linhas = [
+    (("C1", "Malha aberta", "69,2%", "24,72", "57,8%", "não acomoda (11 de 12)"), ()),
+    (("C1", "P", "10,2%", "4,95", "19,5%", "não acomoda (9 de 12)"), ()),
+    (("C1", "PI", "0,0%", "0,94", "9,5%", "0,46 s"), (2,)),
+    (("C1", "PI+FF", "0,0%", "0,72", "9,5%", "0,40 s"), (2, 3, 4, 5)),
+    (("C2", "Malha aberta", "85,7%", "18,38", "57,8%", "não acomoda"), ()),
+    (("C2", "P", "46,6%", "4,16", "35,8%", "não acomoda"), ()),
+    (("C2", "PI", "7,5%", "0,89", "29,7%", "0,95 s"), ()),
+    (("C2", "PI+FF", "6,8%", "0,79", "29,6%", "0,90 s"), (2, 3, 4, 5)),
+    (("C3", "Malha aberta", "90,5%", "23,26", "57,8%", "—"), ()),
+    (("C3", "P", "26,9%", "5,02", "19,9%", "—"), ()),
+    (("C3", "PI", "8,9%", "3,24", "16,5%", "—"), (2, 3, 4)),
+    (("C3", "PI+FF", "9,7%", "3,29", "17,5%", "—"), ()),
+]
+larg = (0.85, 1.35, 1.35, 1.35, 1.25, 2.15)
+gt = s.shapes.add_table(len(linhas) + 1, 6, Inches(0.6), Inches(2.45), Inches(sum(larg)), Inches(0.3 * 13))
+gt.name = "Tabela 10 desempenho"
+tab = gt.table
+for c, wc in enumerate(larg):
+    tab.columns[c].width = Inches(wc)
+cor_cfg = {"Malha aberta": MUTED, "P": GREEN, "PI": ORANGE, "PI+FF": NAVY}
+faixa = {"C1": WHITE, "C2": TINT, "C3": WHITE}
+for r in range(len(linhas) + 1):
+    tab.rows[r].height = Inches(0.36 if r == 0 else 0.29)
+    vals, negrito = (cab, range(6)) if r == 0 else linhas[r - 1]
+    for c, v in enumerate(vals):
+        cell = tab.cell(r, c); cell.text = v
+        cell.margin_top = cell.margin_bottom = Inches(0.01)
+        cell.margin_left = cell.margin_right = Inches(0.05)
+        cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+        p = cell.text_frame.paragraphs[0]; rn = p.runs[0]
+        rn.font.name = FONT; rn.font.size = Pt(11.5 if r == 0 else 12.5)
+        rn.font.bold = c in negrito
+        p.alignment = PP_ALIGN.LEFT if c in (0, 1) else PP_ALIGN.CENTER
+        cell.fill.solid()
+        if r == 0:
+            rn.font.color.rgb = WHITE; cell.fill.fore_color.rgb = NAVY
+        else:
+            rn.font.color.rgb = cor_cfg[vals[1]] if c == 1 else INK
+            if c == 1:
+                rn.font.bold = True
+            cell.fill.fore_color.rgb = faixa[vals[0]]
+caption(s, 0.6, 2.45 + 0.36 + 12 * 0.29 + 0.05, 8.6,
+        "Negrito: melhor valor de cada cenário. C3: trocas mais rápidas que a acomodação. Fonte: Tabela 10 do TCC.")
+text(s, 9.55, 2.55, 3.25, 4.5, [
+    {"t": "P", "b": True, "s": 17, "c": GREEN},
+    {"t": "Melhora muito a malha aberta, mas deixa erro permanente.", "s": 14},
+    {"t": "PI", "b": True, "s": 17, "c": ORANGE},
+    {"t": "Zera o erro: 100% do tempo na faixa no C1 e 91% no C3.", "s": 14},
+    {"t": "PI + FF", "b": True, "s": 17, "c": NAVY},
+    {"t": "Ajuda nas trocas espaçadas (C1, C2) e piora um pouco nas rápidas (C3).", "s": 14}], name="Leitura")
+notes(s, "A tabela é a Tabela 10 do trabalho. Sem controle, a pressão fica de 69% a 91% do tempo fora da faixa. O P reduz bastante, mas deixa erro: não acomoda nos degraus. O PI elimina o erro: 100% na faixa no C1 e cerca de 91% no C3, com acomodação de 0,46 s no C1. O feedforward ajuda no C1 e no C2, com IAE e acomodação menores, e piora um pouco no C3.")
+
+# ================================================================ 16. três cenários
+s = next(cont)
+title(s, "Respostas no tempo nos três cenários")
+cen = [("C1", "c_C1.png", "Um bico por vez", GREEN,
+        "PI e PI+FF ficam 100% na faixa; o P para acima de 3,5 a cada degrau."),
+       ("C2", "c_C2.png", "Degraus de três bicos", NAVY,
+        "P para em 3,70 e 3,90 (previsto 3,71 e 3,91); PI volta em ≈ 0,95 s; o pico de ≈ 30% não some."),
+       ("C3", "d_C3.png", "Trocas aleatórias rápidas", ORANGE,
+        "PI fica 91% do tempo na faixa; as saídas acontecem quando várias trocas no mesmo sentido chegam seguidas.")]
+lw = 3.95
+for i, (cod, arq, sub, cor, msg) in enumerate(cen):
+    x = 0.6 + i * (lw + 0.15)
+    text(s, x, 2.38, lw, 0.36, [{"runs": [(cod + "  ", True, cor), (sub, False, MUTED)], "s": 15}], name=f"Cab {cod}")
+    image(s, FIGS / arq, x + 0.12, 2.74, w=lw - 0.24, name=f"Resposta {cod}")
+    box(s, x, 2.74 + (lw - 0.24) / 1.143 + 0.06, lw, 0.88, name=f"Leitura {cod}")
+    text(s, x + 0.1, 2.74 + (lw - 0.24) / 1.143 + 0.09, lw - 0.2, 0.82, [{"t": msg, "s": 12.5}],
+         anchor=MSO_ANCHOR.MIDDLE, name=f"Texto {cod}")
+notes(s, "Os três gráficos têm o mesmo formato: em cima a pressão, com a faixa de ±10% em verde; no meio a abertura da válvula; embaixo o número de bicos. No C1, um bico por vez, o PI e o PI com feedforward ficam sempre na faixa, e o P para acima da referência a cada degrau. No C2, três bicos fecham de uma vez: o P para em 3,70 e 3,90, como a conta do erro previa; o PI volta à referência; e o pico de cerca de 30% não some, porque a pressão salta antes de a válvula se mover. No C3, com trocas rápidas, o PI fica 91% do tempo na faixa.")
+
+# ================================================================ 17. velocidade da válvula
+s = next(cont)
+title(s, "O gargalo é a velocidade da válvula")
+linhas = [("Velocidade máxima da válvula", "C2: PI", "C2: PI+FF", "C3: PI", "C3: PI+FF"),
+          ("0,5 s⁻¹ (estimado, curso em 2 s)", "7,5%", "6,8%", "8,9%", "9,7%"),
+          ("1,0 s⁻¹ (2× mais rápida)", "4,1%", "3,4%", "2,7%", "3,0%"),
+          ("2,0 s⁻¹ (4× mais rápida)", "2,4%", "1,8%", "1,4%", "1,0%")]
+gt = s.shapes.add_table(4, 5, Inches(0.6), Inches(2.75), Inches(7.4), Inches(2.4))
+gt.name = "Tabela velocidade"
+tab = gt.table
+for c, wc in enumerate((2.9, 1.125, 1.125, 1.125, 1.125)):
+    tab.columns[c].width = Inches(wc)
+melhor = {(1, 2), (1, 3), (2, 2), (2, 3), (3, 2), (3, 4)}
+for r, lin in enumerate(linhas):
+    tab.rows[r].height = Inches(0.6)
+    for c, v in enumerate(lin):
+        cell = tab.cell(r, c); cell.text = v; cell.vertical_anchor = MSO_ANCHOR.MIDDLE
+        pp = cell.text_frame.paragraphs[0]; rn = pp.runs[0]
+        rn.font.name = FONT; rn.font.size = Pt(14 if r else 13); rn.font.bold = (r == 0 or (r, c) in melhor)
+        rn.font.color.rgb = WHITE if r == 0 else INK
+        pp.alignment = PP_ALIGN.LEFT if c == 0 else PP_ALIGN.CENTER
+        cell.fill.solid(); cell.fill.fore_color.rgb = NAVY if r == 0 else (TINT if r % 2 else WHITE)
+text(s, 0.6, 2.35, 7.4, 0.4, [{"t": "Tempo com a pressão fora da faixa", "b": True, "s": 15, "c": NAVY}], name="Cab tabela")
+caption(s, 0.6, 5.25, 7.4, "Negrito: melhor de cada cenário em cada velocidade. Fonte: seção 4.6 do TCC.")
+stat(s, 8.35, 2.55, 4.4, "77%", "do tempo do C3 a válvula anda na velocidade máxima (PI+FF)", color=ORANGE, big_size=44)
+text(s, 8.35, 4.1, 4.4, 2.95, [
+    {"t": "O feedforward manda a válvula para cada novo alvo, mas outra troca chega antes.", "bullet": True},
+    {"t": "Com a válvula 4× mais rápida, o FF volta a ajudar.", "bullet": True},
+    {"t": "Dobrar a velocidade corta o tempo fora da faixa do PI para menos de um terço.", "bullet": True}], size=15)
+notes(s, "A velocidade da válvula é o que mais pesa no resultado. No C3 a válvula passa 77% do tempo na velocidade máxima. Com a válvula duas vezes mais rápida, o tempo fora da faixa do PI cai de 8,9% para 2,7%; com quatro vezes, o feedforward volta a ganhar do PI.")
+
+# ================================================================ 18. conclusões
+s = next(cont)
+title(s, "Conclusões")
+for i, (cab, desc, cor) in enumerate([
+        ("Modelo", "Uma constante de bico (R₁/n²) e uma curva de fonte reproduzem a bancada com erro ≤ 0,7% na pressão", GREEN),
+        ("Sintonia", "Ganho da planta igual para todo n: uma sintonia de Ziegler-Nichols, feita no simulador, serve para todos os casos", NAVY),
+        ("Controle", "O PI zera o erro e mantém a pressão na faixa 100% do tempo no C1 e 91% no C3", ORANGE),
+        ("Limite", "Trocas simultâneas de vários bicos ainda tiram a pressão da faixa: a válvula não é rápida o bastante", MUTED)]):
+    y = 2.5 + i * 1.12
+    box(s, 0.6, y, 12.15, 1.0, name=f"Conclusão {cab}")
+    text(s, 0.8, y + 0.08, 2.1, 0.85, [{"t": cab, "b": True, "s": 19, "c": cor}], anchor=MSO_ANCHOR.MIDDLE, name="Cab")
+    text(s, 2.95, y + 0.08, 9.6, 0.85, [{"t": desc, "s": 16}], anchor=MSO_ANCHOR.MIDDLE, name="Texto")
+text(s, 0.6, 6.95, 12.15, 0.45, [{"t": "Hipótese confirmada em parte e só em simulação: τa, ωmax e a curva da válvula foram estimados, e falta validar com medições no tempo.",
+                                  "b": True, "s": 15, "c": NAVY}], name="Veredito")
+notes(s, "A hipótese foi confirmada em parte e só em simulação. O modelo simples funcionou, uma única sintonia serve para todos os números de bicos, e o PI atende a tolerância na maior parte do tempo. Mas as trocas simultâneas ainda tiram a pressão da faixa, e os parâmetros da válvula precisam ser medidos.")
+
+# ================================================================ 19. trabalhos futuros + obrigado
+s = next(cont)
+title(s, "Trabalhos futuros")
+text(s, 0.6, 2.55, 7.4, 4.4, [
+    {"t": "Medir em bancada a velocidade e a curva de abertura da válvula", "bullet": True},
+    {"t": "Refazer o ensaio de Ziegler-Nichols na bancada real, com o ruído do sensor", "bullet": True},
+    {"t": "Válvula mais rápida ou comando da válvula antes das solenoides, contra os picos", "bullet": True},
+    {"t": "Anti-windup também no limite de velocidade (C3: 8,9% → 5,0% num teste)", "bullet": True},
+    {"t": "Barras comerciais: perda ao longo da barra e capacitância da mangueira", "bullet": True},
+    {"t": "Validar com registros de pulverizadores em campo", "bullet": True}], size=17)
+box(s, 8.4, 2.55, 4.35, 4.4, fill=NAVY, name="Agradecimento")
+text(s, 8.6, 2.85, 3.95, 3.8, [
+    {"t": "Obrigado!", "b": True, "s": 40, "c": WHITE, "align": PP_ALIGN.CENTER},
+    {"t": "Alex de Jesus Terolti", "s": 18, "c": WHITE, "align": PP_ALIGN.CENTER},
+    {"t": "Perguntas da banca", "s": 16, "c": RGBColor(0xBF, 0xD9, 0xC6), "i": True, "align": PP_ALIGN.CENTER}],
+    anchor=MSO_ANCHOR.MIDDLE, name="Texto obrigado")
+notes(s, "Fechar com os trabalhos futuros, começando pelo mais importante: medir a válvula. Agradecer e abrir para perguntas.")
+
+prs.core_properties.title = "Modelagem de sistema de controle para pulverização agrícola de precisão"
+prs.core_properties.author = "Alex de Jesus Terolti"
+out = TCC / "docs" / "Apresentacao_Banca_TCC_v15.pptx"
+prs.save(str(out))
+print("salvo", out)

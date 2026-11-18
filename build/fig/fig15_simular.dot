@@ -1,0 +1,17 @@
+digraph G { rankdir=TB; dpi=200; bgcolor=white; nodesep=0.35; ranksep=0.3;
+ node [fontname="Arial", fontsize=11, shape=box, style="rounded", margin="0.15,0.06"];
+ edge [fontname="Arial", fontsize=10];
+ A [label="Início: P = Pref, α = αff(7), I = 0\nk = 0"];
+ B [label="1. Chegou a hora de uma troca de bicos?\nse sim, atualiza n"];
+ D [label="2a. Erro e = P − Pref\n(pressão lida em tempo real, a cada passo)"];
+ E [label="Controlador P, ou comando\nno limite de posição?", shape=diamond, style=""];
+ F [label="2b. Atualiza a soma\nI = I + e·Δt  (Eqs. 2.13 e 3.20)"];
+ G [label="2c. Comando\nαc = αff(n daqui a 0,2 s) + Kc·(e + I/Ti)  (Eq. 3.21)\n(sem FF: α0 no lugar de αff)\nlimitado entre 0 e 1"];
+ H [label="3. Move a válvula\nvelocidade (Eq. 3.12) e Euler (Eq. 3.13)"];
+ J [label="4. Pressão nova pela bissecção\n(Eq. 3.10, hipótese H6)"];
+ K [label="5. Guarda t, P, α e n"];
+ L [label="Último passo?", shape=diamond, style=""];
+ M [label="Fim: séries no tempo\npara as métricas e os gráficos"];
+ A->B->D; D->E; E->F [label="não"]; E->G [label="sim (não integra)"]; F->G; G->H->J->K->L;
+ L->B [label="não: k = k + 1"]; L->M [label="sim"];
+}

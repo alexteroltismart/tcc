@@ -1,0 +1,16 @@
+digraph G { rankdir=TB; dpi=200; bgcolor=white; nodesep=0.35; ranksep=0.3;
+ node [fontname="Arial", fontsize=11, shape=box, style="rounded", margin="0.15,0.06"];
+ edge [fontname="Arial", fontsize=10];
+ D [label="Tabela 1 de Rosa et al. (2019)\nn, P, Q"];
+ I [label="Ajuste estático\nK e curva da fonte"];
+ V [label="Conferência:\nK = 0,425?", shape=diamond, style=""];
+ X [label="Interrompe"];
+ LOO [label="Validação cruzada\n(deixa um de fora)"];
+ O [label="Faixa de operação\nP máx com válvula fechada → Pref"];
+ S [label="Sintonia\nKg medido, Kc, Ti + margens"];
+ C [label="Cenários C1, C2, C3\nmalha aberta / PI / PI+FF"];
+ C5 [label="Cenário C5\nplanta com erro de modelo"];
+ M [label="Métricas\n% fora, IAE, desvio, acomodação"];
+ J [label="resultados.json"]; G2 [label="figuras/*.png"];
+ D->I->V; V->X [label="não"]; V->LOO [label="sim"]; LOO->O->S; S->C; S->C4; C->M; C4->M; M->J; M->G2;
+}

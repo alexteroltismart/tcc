@@ -1,0 +1,13 @@
+digraph G { rankdir=TB; dpi=200; bgcolor=white; nodesep=0.35; ranksep=0.3;
+ node [fontname="Arial", fontsize=11, shape=box, style="rounded", margin="0.15,0.06"];
+ edge [fontname="Arial", fontsize=10];
+ D [label="Tabela 1 de Rosa et al. (2019)\nn, P, Q"];
+ I [label="Ajuste estático\nK (Eq. 3.2) e curva da fonte (Eqs. 3.5 e 3.6)"];
+ O [label="Faixa de operação\nPref abaixo de 3,56 kgf/cm²"];
+ KG [label="Ganhos Kg e Kn\nretas da Tabela 3 (Eqs. 3.15 e 3.16)"];
+ S [label="Sintonia por alocação de polos\nζ e ts → ωn, Kc e Ti (Eqs. 3.29–3.31)"];
+ L [label="Modelo linear e resposta a um bico\nTn(s) (Eqs. 3.25–3.28), Figuras 19 e 20"];
+ C [label="Simulação dos cenários e métricas\nC1, C2, C3 × malha aberta / P / PI / PI+FF\nvarredura de ωmax (C2 e C3)\n% fora da faixa e IAE (Eqs. 3.33 e 3.34)"];
+ R [label="resultados.json e figuras/*.png"];
+ D->I->O->KG->S; S->C; S->L; C->R; L->R;
+}

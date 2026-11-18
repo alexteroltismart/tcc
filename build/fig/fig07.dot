@@ -1,0 +1,23 @@
+digraph G { rankdir=LR; dpi=200; bgcolor=white; nodesep=0.55; ranksep=0.5; splines=ortho;
+ node [fontname="Arial", fontsize=12, shape=box, margin="0.12,0.06"];
+ edge [fontname="Arial", fontsize=11];
+ R [label=<P<SUB>ref</SUB>>, shape=plaintext];
+ S1 [label="Σ", shape=circle, width=0.4, fixedsize=true];
+ PI [label="PI discreto\nKc, Ti\nanti-windup"];
+ S2 [label="Σ", shape=circle, width=0.4, fixedsize=true];
+ SAT [label=<Saturação<BR/>0 ≤ α<SUB>c</SUB> ≤ 1>];
+ ACT [label=<Atuador da válvula<BR/>τ<SUB>a</SUB>, ω<SUB>max</SUB> (Eq. 3.7)>];
+ PL [label="Planta hidráulica\n(Eq. 3.6)"];
+ OUT [label="P", shape=plaintext];
+ NN [label="n(t)\ncomando dos bicos", shape=plaintext];
+ FF [label=<Feedforward<BR/>α<SUB>ff</SUB>(n), Eq. 3.8>];
+ M [label="Sensor de pressão\namostrado Ts = 50 ms"];
+ {rank=same; S2; FF}
+ {rank=same; PI; NN}
+ R -> S1 [xlabel="+"]; S1 -> PI [xlabel=<e = P − P<SUB>ref</SUB>>]; PI -> S2; S2 -> SAT [xlabel=<α<SUB>c</SUB>>];
+ SAT -> ACT; ACT -> PL [xlabel="α"]; PL -> OUT;
+ NN -> FF; FF -> S2; NN -> PL [xlabel="perturbação"];
+ PL -> M [dir=none, style=invis];
+ OUT -> M [constraint=false]; M -> S1 [xlabel="P medida", constraint=false];
+ SAT -> PI [style=dashed, xlabel="saturação de posição\nou velocidade", constraint=false];
+}

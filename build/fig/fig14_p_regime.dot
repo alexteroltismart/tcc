@@ -1,0 +1,13 @@
+digraph G { rankdir=TB; dpi=200; bgcolor=white; nodesep=0.35; ranksep=0.3;
+ node [fontname="Arial", fontsize=11, shape=box, style="rounded", margin="0.15,0.06"];
+ edge [fontname="Arial", fontsize=10];
+ A [label="Entrada: soma das constantes\nn·K + Kv(α)"];
+ B [label="Intervalo inicial\nP entre 0 e a0"];
+ C [label="Ponto do meio\nPm = (Pbaixo + Palto)/2"];
+ D [label="Fonte entrega mais do que\nas saídas deixam passar?\nQs(Pm) > (n·K + Kv)·√Pm", shape=diamond, style=""];
+ E [label="A resposta está acima:\nPbaixo = Pm"];
+ F [label="A resposta está abaixo:\nPalto = Pm"];
+ G [label="Já repetiu\n100 vezes?", shape=diamond, style=""];
+ H [label="Saída: P = (Pbaixo + Palto)/2\n(Eq. 3.10 satisfeita)"];
+ A->B->C->D; D->E [label="sim"]; D->F [label="não"]; E->G; F->G; G->C [label="não"]; G->H [label="sim"];
+}

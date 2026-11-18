@@ -1,0 +1,13 @@
+digraph G { rankdir=TB; dpi=200; bgcolor=white; nodesep=0.35; ranksep=0.3;
+ node [fontname="Arial", fontsize=11, shape=box, style="rounded", margin="0.15,0.06"];
+ edge [fontname="Arial", fontsize=10];
+ A [label="Entrada: séries P(t) de uma simulação"];
+ B [label="Faixa de tolerância (ISO 16122-2)\n0,9·Pref ≤ P ≤ 1,1·Pref  (Eq. 3.26)"];
+ C [label="Marca cada amostra\ndentro (0) ou fora (1) da faixa"];
+ D [label="Tempo fora = média das marcas × 100  (Eq. 3.27)"];
+ E [label="IAE = soma de |P − Pref|·Δt  (Eq. 3.28)"];
+ F [label="Desvio máximo = maior |P − Pref| / Pref"];
+ G [label="Acomodação: tempo até ficar\ndentro de ±2% após cada troca"];
+ H [label="Saída: métricas da simulação"];
+ A->B->C->D->E->F->G->H;
+}

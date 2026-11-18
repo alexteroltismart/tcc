@@ -1,0 +1,11 @@
+digraph G { rankdir=TB; dpi=200; bgcolor=white; nodesep=0.35; ranksep=0.3;
+ node [fontname="Arial", fontsize=11, shape=box, style="rounded", margin="0.15,0.06"];
+ edge [fontname="Arial", fontsize=10];
+ A [label="Entrada: n bicos abertos"];
+ B [label="Vazão da fonte em Pref\nQs(Pref)  (Eq. 3.7)"];
+ C [label="Constante necessária na válvula\nKv = Qs(Pref)/√Pref − n·K"];
+ D [label="Abertura antecipada\nαff = Kv / Kv,max  (Eq. 3.14)"];
+ E [label="Limita entre 0 e 1"];
+ F [label="Saída: αff"];
+ A->B->C->D->E->F;
+}
