@@ -1,6 +1,6 @@
 """Monta a apresentação da banca (TCC v25, 20 min) sobre o modelo institucional da UNEMAT.
 Versão simples (18/11/2026): sem cartões coloridos nem números em destaque, texto em bullets curtos,
-equações em preto, tabelas em grade simples; slide "o que as FTs mostram" retirado; slide introdutório de pulverização (27 slides).
+equações em preto, tabelas em grade simples; slide "o que as FTs mostram" retirado; slide introdutório de pulverização e slide da simulação em Python (28 slides).
 Versão polida do mesmo dia: build_deck_v25a.py. Anteriores: build_deck_v20.py, build_deck_v19.py, build_deck_v15.py."""
 import copy
 from pathlib import Path
@@ -43,8 +43,8 @@ def duplica_fundo(src):
     return novo
 
 
-# 26 slides de conteúdo + capa = 27; o modelo tem 20 → 7 cópias
-slides += [duplica_fundo(slides[2]) for _ in range(7)]
+# 27 slides de conteúdo + capa = 28; o modelo tem 20 → 8 cópias
+slides += [duplica_fundo(slides[2]) for _ in range(8)]
 cont = iter(slides[1:])
 
 
@@ -437,6 +437,26 @@ text(s, 11.2, 2.4, 1.6, 3.6, [
     "~ ts = 0,63 s"], size=13)
 simbolos(s, "Ik: integral discreta · ek: erro no passo k · Δt: 1 ms")
 notes(s, "A integral vira soma de retângulos. No exemplo a válvula vai de 2,3% para 10,7%. Sem limite de velocidade o PI acomoda em 0,44 s e bate com a FT; com o limite real vai para 0,63 s, porque o PI pede 1,34 por segundo e a válvula dá 0,5.")
+
+# ================================================================ simulação em Python
+s = next(cont)
+title(s, "Simulação em Python")
+w_sim, h_sim = image(s, BFIG / "fig15_simular.png", 0.6, 2.35, h=4.5, name="Laço simular")
+x_sim = 0.6 + w_sim + 0.4
+text(s, x_sim, 2.4, 12.75 - x_sim, 1.9, [
+    "um arquivo só: simulacao/modelo_barra.py (Python 3, numpy e matplotlib)",
+    "sem biblioteca de controle: o laço no tempo está escrito no código",
+    "ordem: ajusta o modelo estático → ganhos e sintonia → modelo linear → cenários"], size=15)
+text(s, x_sim, 3.7, 12.75 - x_sim, 0.4, ["# a cada passo de 1 ms (figura ao lado):"], size=15)
+text(s, x_sim + 0.2, 4.08, 12.75 - x_sim, 2.0, [
+    "~ 1. troca o nº de bicos se chegou a hora",
+    "~ 2. controlador: erro, integral (anti-windup) e comando",
+    "~ 3. move a válvula (Euler, limitada a ±ωmax e entre 0 e 1)",
+    "~ 4. pressão nova pela bissecção",
+    "~ 5. guarda t, P, α e n"], size=14)
+text(s, x_sim, 6.0, 12.75 - x_sim, 0.4, ["saída: resultados.json e figuras; conferências automáticas; código no Apêndice A"], size=15)
+caption(s, x_sim, 6.55, 12.75 - x_sim, "Figura: laço da função simular. Fonte: TCC, Figura 16.")
+notes(s, "Tudo foi feito num único arquivo em Python, só com numpy e matplotlib, sem biblioteca de controle, para cada passo ficar visível no código. O programa ajusta o modelo estático, calcula os ganhos e a sintonia, roda o modelo linear e depois os cenários. A simulação em si é este laço: a cada milissegundo troca os bicos se for a hora, roda o controlador, move a válvula pelo método de Euler com os limites, calcula a pressão nova pela bissecção e guarda os valores. No fim, as séries no tempo dão as métricas e os gráficos.")
 
 # ================================================================ 18. cenários e métricas
 s = next(cont)

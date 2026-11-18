@@ -1,15 +1,15 @@
 # Roteiro da apresentação: 20 minutos
 
-Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (27 slides, visual simples), que corresponde à versão 25 do TCC (`docs/25.pdf`). Todas as figuras, tabelas e equações dos slides são do próprio TCC. O roteiro anterior, de 15 minutos e da v20, está em `Roteiro_Apresentacao_15min_v20.md`.
+Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (28 slides, visual simples), que corresponde à versão 25 do TCC (`docs/25.pdf`). Todas as figuras, tabelas e equações dos slides são do próprio TCC. O roteiro anterior, de 15 minutos e da v20, está em `Roteiro_Apresentacao_15min_v20.md`.
 
 **O que mudou em relação ao roteiro de 15 min:**
 - A parte de controle passou de 4 para 7 slides (12 a 18), com a matemática passo a passo: abertura de equilíbrio, linearização, Laplace, malha fechada, alocação de polos e a forma discreta.
 - Os números são os da v25: *feedforward* antecipado em 0,2 s, que agora é o melhor controlador (C3: 4,4% contra 8,3% do PI).
-- Há um slide introdutório sobre pulverização agrícola (3) e um sobre a antecipação (24, Figura 24).
+- Há slides novos: introdução à pulverização agrícola (3), simulação em Python (19, Figura 16) e antecipação (25, Figura 24).
 - A tabela de resultados é a Tabela 9, só com tempo fora da faixa e IAE.
 
 **Tempo:**
-- O tempo previsto de fala é de **18 min 40 s**. Sobra 1 min 20 s de folga.
+- O tempo previsto de fala é de **19 min 25 s**. Sobram 35 s de folga; se o ensaio passar de 20 min, use os ⏩.
 - O ritmo de referência é de cerca de 130 palavras por minuto.
 - Não é preciso decorar: use as falas como guia e diga com suas palavras. Nas contas, aponte a equação no slide enquanto fala.
 
@@ -41,21 +41,22 @@ Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (27 sl
 | 16 | Malha fechada | 1:25 | 11:30 |
 | 17 | Alocação de polos | 1:20 | 12:50 |
 | 18 | Forma discreta e conferência | 0:55 | 13:45 |
-| 19 | Cenários e métricas ⏩ | 0:20 | 14:05 |
-| 20 | Resultados | 0:35 | 14:40 |
-| 21 | Cenário C1 | 0:25 | 15:05 |
-| 22 | Cenário C2 | 0:35 | 15:40 |
-| 23 | Cenário C3 | 0:25 | 16:05 |
-| 24 | Feedforward antecipado | 0:45 | 16:50 |
-| 25 | Velocidade da válvula | 0:30 | 17:20 |
-| 26 | Conclusões | 0:50 | 18:10 |
-| 27 | Trabalhos futuros e agradecimento | 0:30 | 18:40 |
+| 19 | Simulação em Python | 0:45 | 14:30 |
+| 20 | Cenários e métricas ⏩ | 0:20 | 14:50 |
+| 21 | Resultados | 0:35 | 15:25 |
+| 22 | Cenário C1 | 0:25 | 15:50 |
+| 23 | Cenário C2 | 0:35 | 16:25 |
+| 24 | Cenário C3 | 0:25 | 16:50 |
+| 25 | Feedforward antecipado | 0:45 | 17:35 |
+| 26 | Velocidade da válvula | 0:30 | 18:05 |
+| 27 | Conclusões | 0:50 | 18:55 |
+| 28 | Trabalhos futuros e agradecimento | 0:30 | 19:25 |
 
 **Pontos de controle do relógio:**
 - no slide 8, perto de **3:45**;
 - no slide 14, perto de **8:00**;
-- no slide 19, perto de **13:45**;
-- no slide 26, perto de **17:20**.
+- no slide 20, perto de **14:30**;
+- no slide 27, perto de **18:05**.
 
 Se estiver mais de 30 s atrasado num desses pontos, use os ⏩.
 
@@ -121,31 +122,34 @@ Se estiver mais de 30 s atrasado num desses pontos, use os ⏩.
 ### Slide 18: Forma discreta e conferência (0:55)
 > No programa, a integral vira uma soma de retângulos a cada milissegundo, e o comando é a Equação 3.21. Um exemplo com números: pressão em 3,6, erro de 0,1; a válvula recebe ordem de abrir de 2,3 para 10,7 por cento. Para conferir o projeto, a Figura 20 mostra um bico fechando no simulador completo. Sem o limite de velocidade, o PI acomoda em 0,44 segundo, dentro dos 0,5 pedidos, e fica a menos de 0,01 da função de transferência. Com o limite real, a conta embaixo mostra o problema: o controlador pede 1,34 por segundo, quase três vezes o que a válvula dá. Ela anda em rampa e a acomodação vai para 0,63. O modelo linear acerta os polos, mas quem define o tempo real é a válvula.
 
-### Slide 19: Cenários e métricas ⏩ (0:20)
+### Slide 19: Simulação em Python (0:45)
+> Tudo foi feito num único arquivo em Python, só com numpy e matplotlib, sem biblioteca de controle, para que cada passo ficasse visível no código. O programa ajusta o modelo estático, calcula os ganhos e a sintonia, roda o modelo linear e depois os cenários. A simulação em si é este laço: a cada milissegundo, troca os bicos se chegou a hora, roda o controlador, move a válvula pelo método de Euler com os limites, calcula a pressão nova pela bissecção e guarda os valores. No fim, as séries no tempo dão as métricas e os gráficos. O código completo está no Apêndice A.
+
+### Slide 20: Cenários e métricas ⏩ (0:20)
 > Simulei três cenários: C1, um bico de cada vez; C2, degraus de três bicos, como no ensaio; e C3, trocas aleatórias rápidas. As métricas são o tempo fora da faixa de 10 por cento e o IAE, a área do erro.
 
-### Slide 20: Resultados (0:35)
+### Slide 21: Resultados (0:35)
 > Esta é a Tabela 9. Sem controle, a pressão fica de 69 a 91 por cento do tempo fora da faixa. O P reduz para 38 a 50, mas deixa erro permanente. O PI zera o erro. E o PI com *feedforward* antecipado é o melhor nos três cenários; no C3, cai quase pela metade, de 8,3 para 4,4 por cento.
 
-### Slide 21: Cenário C1 (0:25)
+### Slide 22: Cenário C1 (0:25)
 > Os gráficos têm a pressão em cima, com a faixa em verde, a abertura no meio e o número de bicos embaixo. Cada troca dá um salto de 9,5 por cento, dentro da faixa. O P sai da faixa a partir do quarto bico fechado. O PI e o PI com *feedforward* ficam 100 por cento na faixa.
 
-### Slide 22: Cenário C2 (0:35)
+### Slide 23: Cenário C2 (0:35)
 > O C2 repete o ensaio: três bicos fecham em 2 segundos e mais três em 8. O P para em 3,81 e 4,12, praticamente o que a conta d sobre 1 mais K c K g previa. O PI fica 6,8 por cento fora, e o *feedforward* antecipado 5,1. O pico não some: a pressão salta para 4,54 antes de a válvula se mover. Com a antecipação, o pico baixa para 4,36.
 
-### Slide 23: Cenário C3 (0:25)
+### Slide 24: Cenário C3 (0:25)
 > O C3 imita a aplicação localizada: 66 trocas em 20 segundos. O PI fica 8,3 por cento fora, quando várias trocas no mesmo sentido chegam seguidas. O *feedforward* antecipado fica com 4,4. Sem antecipação, o mesmo *feedforward* ficava pior que o PI, 9,5.
 
-### Slide 24: Feedforward antecipado (0:45)
+### Slide 25: Feedforward antecipado (0:45)
 > Este gráfico mostra por quê. Um bico fecha em meio segundo. Sem antecipar, o *feedforward* não ajuda: o PI, lendo em tempo real, já manda abrir no mesmo instante, e as duas correções somadas passam do ponto. É o s ao quadrado no numerador da Equação 3.28. Antecipando 0,2 segundo, a válvula começa a abrir antes; a pressão cai um pouco, para 3,44, ainda dentro da faixa, e o salto vai a 3,79 em vez de 3,83. O IAE dessa troca foi 0,064, contra 0,071 do PI. No C3, esse ganho se repete em cada troca.
 
-### Slide 25: Velocidade da válvula (0:30)
+### Slide 26: Velocidade da válvula (0:30)
 > O que mais pesa ainda é a velocidade da válvula. O salto acontece com qualquer controlador, e a volta depende da rampa: para três bicos são 0,36 de abertura, cerca de 0,7 segundo. Com a válvula duas vezes mais rápida, o C3 cai para 0,4 por cento com o PI e 0,1 com o *feedforward* antecipado.
 
-### Slide 26: Conclusões (0:50)
+### Slide 27: Conclusões (0:50)
 > Concluindo: um modelo com uma constante de bico e uma curva de fonte reproduziu a bancada. Como o ganho da planta não depende do número de bicos, uma única sintonia por alocação de polos serve para todos os casos. O PI zera o erro, e o *feedforward* antecipado em 0,2 segundo foi o melhor dos três. Mas três bicos fechando juntos ainda tiram a pressão da faixa por cerca de meio segundo. A hipótese foi confirmada em parte e só em simulação: os parâmetros da válvula foram estimados, e falta medir a pressão no tempo em bancada.
 
-### Slide 27: Trabalhos futuros e agradecimento (0:30)
+### Slide 28: Trabalhos futuros e agradecimento (0:30)
 > Como próximos passos: medir a velocidade e a curva da válvula, medir a resposta da malha, testar uma válvula mais rápida com antecipação ajustada ao tamanho da troca, congelar a integral durante a antecipação e estender o anti-windup ao limite de velocidade. Agradeço a atenção e fico à disposição para as perguntas.
 
 ---
