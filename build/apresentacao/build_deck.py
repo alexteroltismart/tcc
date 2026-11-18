@@ -358,12 +358,12 @@ eq(s, "lin_soma", "-1{,}645\\,\\Delta P = 0{,}795\\,\\Delta N + 0{,}795\\,\\Delt
    0.8, 5.12, size=17, max_w=7.0)
 eq(s, "lin_res", "\\Delta P = -\\frac{6{,}55}{2{,}462}\\,\\Delta\\alpha - \\frac{0{,}795}{2{,}462}\\,\\Delta N = -2{,}66\\,\\Delta\\alpha - 0{,}323\\,\\Delta N",
    0.8, 5.65, size=18, max_w=7.0)
-eq(s, "lin_D", "D = \\frac{C}{2\\sqrt{P}} - \\frac{dQ_s}{dP} = 2{,}462", 8.6, 2.85, size=18, max_w=4.0)
-eq(s, "lin_kg", "K_g = -\\frac{K_{v,max}\\sqrt{P}}{D} = -2{,}66", 8.6, 3.65, size=18, max_w=4.0)
-eq(s, "lin_kn", "K_n = -\\frac{K\\sqrt{P}}{D} = -0{,}323", 8.6, 4.45, size=18, max_w=4.0)
-text(s, 8.5, 5.3, 4.3, 1.6, [
-    "Kg e Kn não mudam com n (soma 0,817 fica igual)",
-    "→ uma sintonia só para todo n"], size=15)
+w_f12, h_f12 = image(s, BFIG / "fig07.png", 8.5, 2.35, w=4.25, name="Figura 12 pequena")
+caption(s, 8.5, 2.35 + h_f12 + 0.01, 4.25, "Figura 12: Diagrama de blocos do controle proposto. Fonte: elaborada pelo autor. A linearização troca o bloco da planta hidráulica por Kg e Kn.")
+eq(s, "lin_D", "D = \\frac{C}{2\\sqrt{P}} - \\frac{dQ_s}{dP} = 2{,}462", 8.6, 4.92, size=16, max_w=3.6)
+eq(s, "lin_kg", "K_g = -\\frac{K_{v,max}\\sqrt{P}}{D} = -2{,}66", 8.6, 5.5, size=16, max_w=3.6)
+eq(s, "lin_kn", "K_n = -\\frac{K\\sqrt{P}}{D} = -0{,}323", 8.6, 6.08, size=16, max_w=3.6)
+text(s, 0.6, 6.35, 7.6, 0.5, ["Kg e Kn não mudam com n (a soma 0,817 fica igual) → uma sintonia só para todo n"], size=15)
 simbolos(s, "ΔP, Δα, ΔN: desvios em torno do ponto nominal · D: denominador comum · Kg: ganho da planta · Kn: ganho do distúrbio (por bico)")
 notes(s, "Cada vazão vira a sua reta tangente (derivadas parciais). Somando no nó e isolando delta P, sai o denominador 2,462 e os ganhos Kg = −2,66 e Kn = −0,323. Com 4 bicos a parcela dos bicos cai e a da válvula sobe, mas a soma é a mesma, então os ganhos não dependem de n.")
 
