@@ -1,0 +1,173 @@
+Steward e Humburg (2000): Modeling the Raven SCS-700 Chemical Injection System with Carrier Control with Sprayer Simulation
+
+Ficha: Brian L. Steward (Iowa State) e Dan S. Humburg (South Dakota State). Transactions of the ASAE, v. 43, n. 2, p. 231–245, 2000, com 15 páginas. Vem da dissertação de mestrado de Steward (1994) e teve apoio da Raven Industries.
+
+1. Problema e objetivos
+
+Na injeção direta, o defensivo é injetado na água (o carrier) perto da barra em vez de ir pré-misturado no tanque. A limitação conhecida é o atraso de transporte entre o ponto de injeção e os bicos. No controle do carrier, a vazão de defensivo e a de água mudam juntas, para que a concentração fique constante e só o volume varie. As diferenças de dinâmica entre os dois subsistemas, porém, criam variações transitórias de concentração. Ninguém tinha modelado esse tipo de sistema.
+
+O contexto: o USDA (1989) recomenda erro de aplicação ≤ 5%, mas a literatura mostra erros maiores na prática.
+
+Objetivos:
+1. modelar o subsistema químico e projetar o controlador;
+2. modelar o subsistema do carrier;
+3. simular três tipos de pulverizador, com e sem controle do carrier;
+4. identificar os componentes que limitam o desempenho.
+
+Os dois subsistemas foram tratados como desacoplados, e isso foi verificado em ensaio.
+
+2. Subsistema químico (injeção)
+
+Hardware:
+- bomba de pistão de curso ajustável à mão (Raven), em que a vazão é proporcional à rotação;
+- motor CC de ímã permanente (Stature 5075-005), com correia dentada;
+- tacômetro CC (Barber-Colman FYQM-63400-51) e sensor de dente de engrenagem com 27 dentes (Micro Switch 1GT101DC).
+
+Modelo da carga: a bomba é um torque de carga linear na rotação e na pressão de saída, com coeficientes $m_s$ = 1,34 mN·m/(rad/s) e $m_p$ = 0,613 mN·m/kPa. Os dois foram levantados em bancada, de 100 a 1700 rpm e de 0 a 689 kPa, sem interação entre rotação e pressão.
+
+Controlador novo, um PI por PLL:
+- contadores digitais comparam a frequência comandada com a do sensor de dente, o que funciona como integrador;
+- um DAC e um amplificador diferencial subtraem a realimentação do tacômetro, filtrada em 10,8 Hz;
+- um PWM de 6 kHz numa ponte de FETs aciona o motor.
+
+Resultado:
+- a função de transferência é de 4ª ordem, com polos em −607, −36,9 ± j179 e −2,28 e zero em −68;
+- o polo dominante, em −2,28, dá tempo de subida (10–90%) de 0,95 s no modelo contra 0,9 s medido;
+- o tempo de subida não muda com a pressão (0 a 1241 kPa) nem com o curso da bomba, ou seja, o controlador é robusto à carga.
+
+3. Subsistema do carrier (a parte que interessa ao TCC)
+
+Bancada (Fig. 4):
+- bomba centrífuga Hypro 9202C movida por motor CA;
+- válvula borboleta de 1" (Raven 445) acionada por motorredutor CC (Barber-Colman CYHC-43300) de 12 V;
+- medidor de vazão Raven RFM55;
+- 5 reguladores de vazão (Spraying Systems 4916-250) no papel dos bicos, abertos para a atmosfera;
+- mangueira de borracha de 1¼" e de ¾" na distribuição;
+- tanque de 50 galões.
+
+Modelos dos componentes, todos como orifício turbulento (Merritt, 1967):
+
+$$Q = C_D A_0\sqrt{2\Delta P/\rho} ;\Rightarrow; \Delta P = K_Q Q^2,\quad K_Q = \frac{1}{2C_D^2A_0^2}\ (\rho = 1\ \text{kg/L})$$
+
+┌──────────────┬───────────────────────────────┬──────────────────┐
+│  Componente  │        Como foi obtido        │ Valor de $K_Q$   │
+│              │                               │  [kPa/(L/min)²]  │
+├──────────────┼───────────────────────────────┼──────────────────┤
+│ Bicos (5 em  │ catálogo, ajuste por mínimos  │                  │
+│ paralelo)    │ quadrados; $K_{QN}$ = $K_Q$   │ 0,012            │
+│              │ individual / 5²               │                  │
+├──────────────┼───────────────────────────────┼──────────────────┤
+│ Tubulação    │ medida em 10 vazões           │ 0,022            │
+├──────────────┼───────────────────────────────┼──────────────────┤
+│ Medidor de   │ catálogo                      │ 0,0011           │
+│ vazão        │                               │                  │
+├──────────────┼───────────────────────────────┼──────────────────┤
+│              │ 9 ângulos; $K_{QV} =          │                  │
+│ Válvula      │ A,e^{c_3\theta^3 +            │ de 7,5·10⁻⁴      │
+│ borboleta    │ c_2\theta^2 + c_1\theta}$,    │ (aberta) a 4,6   │
+│              │ com $A$ = 7,54·10⁻⁴           │                  │
+├──────────────┼───────────────────────────────┼──────────────────┤
+│ Bomba        │ 20 pontos, 2º grau: $P =      │                  │
+│ centrífuga   │ -0{,}0086Q^2 + 0{,}22Q +      │ —                │
+│              │ 364{,}4$ kPa                  │                  │
+└──────────────┴───────────────────────────────┴──────────────────┘
+
+Equação de malha (Eq. 6). A válvula fica em série com os bicos, como estrangulamento:
+
+$$a_2Q^2 + a_1Q + a_0 = [K_{QV}(\theta) + K_{QN} + K_{QFM} + K_{QP}],Q^2$$
+
+Resolvida por Bhaskara, ela dá $Q(\theta)$. O modelo bate com o medido (Fig. 9): a vazão cai de ~95 para ~5 L/min entre 40° e 90° de ângulo.
+
+Medidor: 72 pulsos por galão, com período entre 0,015 e 0,83 s conforme a vazão. Pior caso adotado: amostragem de 0,2 s (vale para vazões acima de 15 L/min).
+
+Motor da válvula, em espaço de estados (Eq. 7), com corrente, rotação e ângulo como estados:
+- $R_a$ = 18,6 Ω, $L_a$ = 24,9 mH;
+- $K_T$ = 98,3 mN·m/A;
+- $J_m$ = 0,00925 mN·m·s², $B_m$ = 0,00847 mN·m·s;
+- redução de 1:1263.
+
+A hidráulica entra como função estática $Q = F(\theta)$, sem dinâmica.
+
+Controlador do carrier: proporcional, amostrado a 0,2 s, com ZOH e saturação em ±12 V:
+
+$$v_{a2} = G_1 K_{FM}(Q_{ref} - Q),\quad -12 \le v_{a2} \le 12\ \text{V}$$
+
+Resultados do carrier:
+- Ganhos: com $G_1$ = 20, um degrau de 18,9 para 56,8 L/min sobe em ~2,5 s com leve sobressinal. Com $G_1$ = 40, o tempo de subida é o mesmo, porque a válvula já gira na velocidade máxima, e aparece oscilação. Num degrau menor (18,9 → 28,4), $G_1$ = 40 é estável. Como o sistema é não linear, a estabilidade depende do ganho e do ponto de operação.
+- Comparação com o controlador comercial Raven (Tabela 3): tempos de subida parecidos, de 1,3 a 4,4 s contra 1,75 a 4,0 s, o que valida o modelo. A acomodação do Raven é pior, porque ele dá "toques" lentos perto da referência; isso é efeito do algoritmo.
+- Três limitações encontradas:
+  a. a saturação de tensão, que limita a velocidade angular da válvula e é a principal;
+  b. a taxa lenta do medidor de vazão;
+  c. a não linearidade entre ângulo, pressão e vazão.
+- Velocidade da válvula dobrada (0,9 → 1,8 rpm): o tempo de subida cai pela metade, mas a acomodação quase não muda. Em 3 casos o sistema ficou instável com $G_1$ = 20, e foi preciso baixar o ganho para 10. Para acelerar mais, é preciso reduzir o ganho ou amostrar a vazão mais rápido.
+
+4. Simulação dos pulverizadores
+
+Configuração:
+- três tipos, tirados de Way et al. (1992): particular a lanço, comercial a lanço e particular em faixa;
+- perturbação: rampa de velocidade de 1,6 km/h/s até +30%, com a velocidade amostrada a cada 0,5 s;
+- métrica: % da área com erro de aplicação fora de ±5% em 402 m de percurso;
+- a concentração chega a cada bico com atraso de transporte e sem difusão.
+
+Tabela 4: área fora de ±5%
+
+┌───────────────────────┬─────────────┬────────────┬─────────────┐
+│     Configuração      │ Particular  │ Comercial  │ Particular  │
+│                       │   a lanço   │  a lanço   │  em faixa   │
+├───────────────────────┼─────────────┼────────────┼─────────────┤
+│ Base (carrier, $G_1$  │             │            │             │
+│ 20, válvula 0,9 rpm,  │ 1,37%       │ 4,02%      │ 1,29%       │
+│ velocidade a 0,5 s)   │             │            │             │
+├───────────────────────┼─────────────┼────────────┼─────────────┤
+│ Sem controle do       │ 2,69%       │ 7,80%      │ 5,60%       │
+│ carrier               │             │            │             │
+├───────────────────────┼─────────────┼────────────┼─────────────┤
+│ Velocidade amostrada  │ 1,12%       │ 0,23%      │ 1,15%       │
+│ a 0,3 s               │             │            │             │
+├───────────────────────┼─────────────┼────────────┼─────────────┤
+│ Velocidade amostrada  │ 0,64%       │ 0,00%      │ 1,08%       │
+│ a 0,1 s               │             │            │             │
+├───────────────────────┼─────────────┼────────────┼─────────────┤
+│ Válvula a 1,8 rpm     │ 1,36%       │ 2,92%      │ 1,00%       │
+├───────────────────────┼─────────────┼────────────┼─────────────┤
+│ Válvula a 3,5 rpm     │ 1,34%       │ 2,56%      │ 1,00%       │
+│ ($G_1$ 10)            │             │            │             │
+├───────────────────────┼─────────────┼────────────┼─────────────┤
+│ 1,8 rpm + velocidade  │ 0,12%       │ 0,17%      │ 0,79%       │
+│ a 0,1 s               │             │            │             │
+└───────────────────────┴─────────────┴────────────┴─────────────┘
+
+Leitura:
+- sem controle do carrier, o resultado bate com Way et al. (1992): 8,9%, 2,7% e 5,1%;
+- o maior erro aparece no início da aceleração, pela soma do atraso de amostragem com a resposta dos dois subsistemas;
+- a diferença de dinâmica entre os subsistemas gera uma variação de concentração de até ~4,5%, ainda dentro dos 5%.
+
+5. Conclusões dos autores
+
+1. O modelo químico prevê bem a resposta ao degrau, sem depender da pressão.
+2. O modelo hidráulico não linear descreve bem a vazão em função do ângulo da válvula.
+3. A saturação de tensão limita a velocidade da válvula, e a taxa do medidor limita quanto essa velocidade pode subir sem instabilizar.
+4. Injeção com controle do carrier é melhor que injeção simples.
+5. Os dois controladores não precisam ter a mesma dinâmica, mas as diferenças devem ser pequenas.
+6. Amostrar a velocidade mais rápido e acelerar a válvula reduz o erro, mas acelerar a válvula leva à instabilidade por causa da amostragem lenta da vazão.
+
+Limite apontado pelos autores: o modelo vale para a bancada testada, mas o método serve para qualquer configuração. A faixa de controle do carrier fica limitada pela faixa de pressão dos bicos, e bicos modulados (Giles, 1996) podem ampliá-la.
+
+6. Leitura crítica para o TCC
+
+1. É a fonte metodológica do TCC. Daqui saem a lei de orifício para tudo menos a bomba, o $K_Q/n^2$ para bicos em paralelo, a bomba de 2º grau, a equação de malha, a saturação de velocidade da válvula, os 5% de tolerância e a métrica de "área fora da faixa", que no TCC virou "tempo fora da faixa". Conferi as citações do 08 (2.4.4, 2.6, 1.3) e os números estão corretos.
+2. Diferença de arquitetura que o texto precisa deixar clara. Aqui a válvula borboleta fica em série: ela estrangula a vazão para os bicos. No TCC, a válvula fica em derivação: ela alivia o excesso de volta ao tanque. Do jeito que está, o 2.3 do 08 ("a pressão pode ser ajustada... com uma válvula que devolve o excesso... Steward e Humburg usaram uma válvula borboleta") sugere que a de Steward também alivia. Vale uma frase dizendo que ela é de estrangulamento em série.
+3. Também controla outra variável, com outro controlador e outra perturbação. Steward controla vazão com um controlador só proporcional contra mudanças de velocidade. O TCC controla pressão com um PI contra troca de bicos. As conclusões sobre velocidade da válvula se transferem bem, mas os tempos de resposta não.
+4. Apoio direto para a H6. No espaço de estados, a hidráulica entra como função estática $Q = F(\theta)$: só o motor da válvula tem dinâmica. É exatamente a hipótese de pressão instantânea do TCC, e dá para citar como precedente no 3.4.1.
+5. Apoio para o item 2.3 da banca (margens × saturação). Com a válvula saturada, o tempo de subida não muda com o ganho, e a estabilidade depende do tamanho do degrau. Isso justifica dizer que as margens lineares valem para pequenas variações.
+6. Um dado para ω_max, que derruba a estimativa atual.
+   - A 0,9 rpm (0,094 rad/s), a borboleta leva ~17 s para girar 90°. Mesmo só na faixa útil de 40° a 90°, são ~9 s.
+   - Normalizando como no TCC, isso dá ω_max ≈ 0,06–0,11 s⁻¹. A 1,8 rpm, o dobro.
+   - O ω_max = 0,5 s⁻¹ do TCC (curso em 2 s) é, portanto, 4 a 8 vezes mais rápido que essa válvula comercial de 1987.
+   - Não é a mesma válvula (borboleta de 1" contra agulha de 1/4" com servo), mas a banca pode usar esse número. Convém citá-lo como limite inferior e explicar por que um servo de modelismo é mais rápido.
+7. Merritt (1967) é citado aqui diretamente para a lei de orifício. Como o livro está em referencias base/, o TCC pode trocar o apud por citação direta.
+   - Normalizando como no TCC, isso dá ω_max ≈ 0,06–0,11 s⁻¹. A 1,8 rpm, o dobro.
+   - O ω_max = 0,5 s⁻¹ do TCC (curso em 2 s) é, portanto, 4 a 8 vezes mais rápido que essa válvula comercial de 1987.
+   - Não é a mesma válvula (borboleta de 1" contra agulha de 1/4" com servo), mas a banca pode usar esse número. Convém citá-lo como limite inferior e explicar por que um servo de modelismo é mais rápido.
+7. Merritt (1967) é citado aqui diretamente para a lei de orifício. Como o livro está em referencias base/, o TCC pode trocar o apud por citação direta.
+8. Validação dinâmica: Steward comparou os tempos de subida com o controlador comercial na bancada. O TCC não tem equivalente, e é a limitação 1.2 da banca.
