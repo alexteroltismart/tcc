@@ -244,21 +244,21 @@ notes(s, "Os sete pontos da tabela foram usados para ajustar o modelo. Os autore
 # ================================================================ 7. modelo estático
 s = next(cont)
 title(s, "Modelo estático")
-image(s, BFIG / "fig06.png", 0.6, 2.4, w=6.6, name="Circuito equivalente")
-caption(s, 0.6, 2.4 + 6.6 / 6.32 + 0.02, 6.6, "Figura 11: Circuito hidráulico equivalente proposto. Fonte: elaborada pelo autor.")
-text(s, 7.5, 2.4, 5.3, 0.4, ["~ bico (lei de orifício), K = 0,425:"], size=15)
-eq(s, "est0", "q = K\\sqrt{P}", 7.8, 2.8, size=20)
-text(s, 7.5, 3.35, 5.3, 0.4, ["~ fonte (bomba + válvula de mola), mínimos quadrados:"], size=15)
-eq(s, "est1", "P = a_2 Q_s^2 + a_1 Q_s + a_0", 7.8, 3.75, size=20)
-text(s, 7.5, 4.3, 5.3, 0.4, ["~ válvula de alívio, linear na abertura:"], size=15)
-eq(s, "est2", "Q_v = K_{v,max}\\,\\alpha\\,\\sqrt{P}", 7.8, 4.7, size=20)
+image(s, BFIG / "fig06.png", 0.6, 2.4, w=8.0, name="Circuito equivalente")
+caption(s, 0.6, 2.4 + 8.0 / 6.32 + 0.02, 8.0, "Figura 11: Circuito hidráulico equivalente proposto. Fonte: elaborada pelo autor.")
+text(s, 8.8, 2.4, 4.0, 0.4, ["~ bico (orifício), K = 0,425:"], size=15)
+eq(s, "est0", "q = K\\sqrt{P}", 9.1, 2.8, size=20)
+text(s, 8.8, 3.35, 4.0, 0.4, ["~ fonte (mínimos quadrados):"], size=15)
+eq(s, "est1", "P = a_2 Q_s^2 + a_1 Q_s + a_0", 9.1, 3.75, size=20)
+text(s, 8.8, 4.3, 4.0, 0.4, ["~ válvula de alívio (linear):"], size=15)
+eq(s, "est2", "Q_v = K_{v,max}\\,\\alpha\\,\\sqrt{P}", 9.1, 4.7, size=20)
 text(s, 0.6, 4.25, 6.6, 0.8, [
     "em regime: entra = sai no nó",
     "juntando bicos e válvula em C, a pressão sai explícita (Eq. 3.11):"], size=15)
 eq(s, "cap_saida", "C = n\\,K + K_{v,max}\\,\\alpha", 0.9, 5.15, size=19)
 eq(s, "p_explicito", "P(n,\\alpha) = \\left[\\frac{a_1C + \\sqrt{a_1^2C^2 + 4a_0\\left(1 - a_2C^2\\right)}}{2\\left(1 - a_2C^2\\right)}\\right]^2",
    0.9, 5.65, size=19, max_w=6.5)
-text(s, 7.5, 5.5, 5.3, 1.2, ["a pressão só depende de C"], size=15)
+text(s, 8.8, 5.5, 4.0, 1.2, ["a pressão só depende de C"], size=15)
 simbolos(s, "C: capacidade de saída · Qs: vazão da fonte · a2, a1, a0: coef. da fonte · Qv: vazão da válvula · Kv,max: constante da válvula aberta · α: abertura (0 a 1)")
 notes(s, "Fonte empurra, bicos e válvula deixam sair. Em regime entra = sai. Com C, sai uma equação de 2º grau em √P e a pressão fica explícita. A pressão só depende de C.")
 
