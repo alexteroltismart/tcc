@@ -279,12 +279,14 @@ notes(s, "Com n bicos em paralelo a resistência é a de um bico dividida por n 
 # ================================================================ 9. validação
 s = next(cont)
 title(s, "Validação do modelo estático")
-text(s, 0.6, 2.5, 4.6, 4.4, [
-    "7 pontos medidos",
-    "erro máx. na pressão: 0,7%",
-    "erro máx. na vazão: 2,3%",
-    "a válvula de alívio só baixa a pressão → Pref < 3,56 kgf/cm² (fonte com 7 bicos)",
-    "adotado Pref = 3,5 kgf/cm²"])
+text(s, 0.6, 2.4, 4.7, 0.4, ["~ linha preta: curva da fonte (Eq. 4.1)"], size=15)
+eq(s, "val_fonte", "P = -0{,}0355\\,Q_s^2 - 0{,}2018\\,Q_s + 5{,}815", 0.8, 2.8, size=17, max_w=4.4)
+text(s, 0.6, 3.4, 4.7, 0.4, ["~ linhas azuis: curva de carga, uma para cada n"], size=15)
+eq(s, "val_carga", "P = \\left(\\frac{Q}{n\\,K}\\right)^2, \\qquad K = 0{,}425", 0.8, 3.8, size=18, max_w=4.4)
+text(s, 0.6, 4.75, 4.7, 2.1, [
+    "cruzamento = ponto de operação",
+    "erro máx.: 0,7% na pressão, 2,3% na vazão",
+    "válvula só baixa a pressão → Pref < 3,56; adotado Pref = 3,5 kgf/cm²"], size=15)
 image(s, FIGS / "b_fonte_carga.png", 5.5, 2.45, h=4.2, name="Fonte e carga")
 caption(s, 5.5, 6.67, 6.5, "Figura 18: Curva da fonte e curvas de carga da barra. Fonte: elaborada pelo autor com dados de Rosa, Terra e Drews Jr (2019).")
 notes(s, "O modelo reproduziu os sete pontos com erro de até 0,7% na pressão e 2,3% na vazão. Como a válvula só alivia, a referência tem de ficar abaixo de 3,56; foi escolhido 3,5.")

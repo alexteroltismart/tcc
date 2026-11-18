@@ -10,7 +10,7 @@ Cada slide tem três partes:
 - **Fala:** um texto de apoio, em frases curtas. Não é para decorar; diga com suas palavras.
 
 **Tempo:**
-- A fala prevista soma **19 min 25 s**, com 35 s de folga.
+- A fala prevista soma **19 min 35 s**, com 25 s de folga.
 - O ritmo de referência é de cerca de 130 palavras por minuto.
 - Se atrasar, encurte os slides marcados com ⏩ (cada um tem uma versão de uma frase).
 - Não corte os slides 16 e 17 (malha fechada e polos): eles são o centro da parte de controle.
@@ -41,34 +41,34 @@ Ao mudar de bloco, diga uma frase de transição. Elas estão marcadas com ➜ n
 | 7 | Bancada de referência | 0:40 | 3:45 |
 | 8 | Modelo estático | 0:50 | 4:35 |
 | 9 | Resistência R₁/n² ⏩ | 0:35 | 5:10 |
-| 10 | Validação ⏩ | 0:25 | 5:35 |
-| 11 | Modelo dinâmico | 0:40 | 6:15 |
-| 12 | Estratégia de controle | 0:50 | 7:05 |
-| 13 | Abertura de equilíbrio (*feedforward*) | 0:55 | 8:00 |
-| 14 | Linearização | 1:10 | 9:10 |
-| 15 | Domínio de Laplace | 0:55 | 10:05 |
-| 16 | Malha fechada | 1:25 | 11:30 |
-| 17 | Alocação de polos | 1:20 | 12:50 |
-| 18 | Forma discreta e conferência | 0:55 | 13:45 |
-| 19 | Simulação em Python | 0:45 | 14:30 |
-| 20 | Cenários e métricas ⏩ | 0:20 | 14:50 |
-| 21 | Resultados | 0:35 | 15:25 |
-| 22 | Cenário C1 | 0:25 | 15:50 |
-| 23 | Cenário C2 | 0:35 | 16:25 |
-| 24 | Cenário C3 | 0:25 | 16:50 |
-| 25 | Feedforward antecipado | 0:45 | 17:35 |
-| 26 | Velocidade da válvula | 0:30 | 18:05 |
-| 27 | Conclusões | 0:50 | 18:55 |
-| 28 | Trabalhos futuros e agradecimento | 0:30 | 19:25 |
+| 10 | Validação ⏩ | 0:35 | 5:45 |
+| 11 | Modelo dinâmico | 0:40 | 6:25 |
+| 12 | Estratégia de controle | 0:50 | 7:15 |
+| 13 | Abertura de equilíbrio (*feedforward*) | 0:55 | 8:10 |
+| 14 | Linearização | 1:10 | 9:20 |
+| 15 | Domínio de Laplace | 0:55 | 10:15 |
+| 16 | Malha fechada | 1:25 | 11:40 |
+| 17 | Alocação de polos | 1:20 | 13:00 |
+| 18 | Forma discreta e conferência | 0:55 | 13:55 |
+| 19 | Simulação em Python | 0:45 | 14:40 |
+| 20 | Cenários e métricas ⏩ | 0:20 | 15:00 |
+| 21 | Resultados | 0:35 | 15:35 |
+| 22 | Cenário C1 | 0:25 | 16:00 |
+| 23 | Cenário C2 | 0:35 | 16:35 |
+| 24 | Cenário C3 | 0:25 | 17:00 |
+| 25 | Feedforward antecipado | 0:45 | 17:45 |
+| 26 | Velocidade da válvula | 0:30 | 18:15 |
+| 27 | Conclusões | 0:50 | 19:05 |
+| 28 | Trabalhos futuros e agradecimento | 0:30 | 19:35 |
 
 **Pontos de controle do relógio** (quando o slide aparece):
 
 | Slide | Horário |
 |---|---|
 | 8 | 3:45 |
-| 14 | 8:00 |
-| 20 | 14:30 |
-| 27 | 18:05 |
+| 14 | 8:10 |
+| 20 | 14:40 |
+| 27 | 18:15 |
 
 Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
@@ -170,13 +170,13 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
 *Versão curta: "A resistência da barra segue R₁ sobre n ao quadrado, com um parâmetro só e erro máximo de 5,9 por cento."*
 
-### Slide 10: Validação ⏩ (0:25)
-**Mostre:** os pontos laranja sobre a curva preta da Figura 18 e a linha verde do Pref.
+### Slide 10: Validação ⏩ (0:35)
+**Mostre:** a equação da fonte e a linha preta; a equação de carga e uma linha azul; depois os pontos laranja nos cruzamentos e a linha verde do Pref.
 
 **Ideia:** o modelo acerta os dados, e a referência tem de ficar abaixo de 3,56.
 
 **Fala:**
-> O modelo reproduziu os sete pontos medidos com erro de até 0,7 por cento na pressão e 2,3 na vazão. Ele também mostrou uma regra: a válvula de alívio só baixa a pressão. Então a referência tem de ficar abaixo do que a fonte sustenta com sete bicos, que é 3,56. Adotei 3,5.
+> A linha preta é a curva da fonte, a Equação 4.1. Cada linha azul é a curva de carga da barra para um número de bicos: P igual a Q sobre n K, ao quadrado. O ponto de operação é o cruzamento das duas. O modelo reproduziu os sete pontos medidos, em laranja, com erro de até 0,7 por cento na pressão e 2,3 na vazão. Ele também mostrou uma regra: a válvula de alívio só baixa a pressão. Então a referência tem de ficar abaixo do que a fonte sustenta com sete bicos, que é 3,56. Adotei 3,5.
 
 *Versão curta: "O modelo errou menos de 1 por cento na pressão, e a referência adotada foi 3,5."*
 
