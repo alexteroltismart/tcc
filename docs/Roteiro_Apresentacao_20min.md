@@ -1,6 +1,6 @@
 # Roteiro da apresentação: 20 minutos
 
-Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (28 slides), que corresponde à versão 25 do TCC (`docs/25.pdf`). As figuras, tabelas e equações dos slides têm a mesma numeração do trabalho. O roteiro anterior, de 15 minutos e da v20, está em `Roteiro_Apresentacao_15min_v20.md`.
+Este roteiro acompanha a apresentação `Apresentacao_Banca_TCC_v25.pptx` (26 slides), que corresponde à versão 25 do TCC (`docs/25.pdf`). As figuras, tabelas e equações dos slides têm a mesma numeração do trabalho. O roteiro anterior, de 15 minutos e da v20, está em `Roteiro_Apresentacao_15min_v20.md`.
 
 ## Como usar
 
@@ -10,7 +10,7 @@ Cada slide tem três partes:
 - **Fala:** um texto de apoio, em frases curtas. Não é para decorar; diga com suas palavras.
 
 **Tempo:**
-- A fala prevista soma **19 min 40 s**, com 20 s de folga.
+- A fala prevista soma **17 min 50 s**, com cerca de 2 min de folga para imprevistos.
 - O ritmo de referência é de cerca de 130 palavras por minuto.
 - Se atrasar, encurte os slides marcados com ⏩ (cada um tem uma versão de uma frase).
 - Não corte os slides 16 e 17 (malha fechada e polos): eles são o centro da parte de controle.
@@ -22,7 +22,7 @@ Cada slide tem três partes:
 | Contexto | 1 a 6 | Qual é o problema e o que o trabalho quer mostrar? |
 | Modelo | 7 a 11 | Como a pressão depende dos bicos e da válvula? |
 | Controle | 12 a 19 | Como o controlador foi projetado e conferido? |
-| Resultados | 20 a 28 | Funcionou? Onde ainda falha? |
+| Resultados | 20 a 26 | Funcionou? Onde ainda falha? |
 
 Ao mudar de bloco, diga uma frase de transição. Elas estão marcadas com ➜ nas falas.
 
@@ -49,17 +49,15 @@ Ao mudar de bloco, diga uma frase de transição. Elas estão marcadas com ➜ n
 | 15 | Domínio de Laplace | 0:55 | 10:20 |
 | 16 | Malha fechada | 1:25 | 11:45 |
 | 17 | Alocação de polos | 1:20 | 13:05 |
-| 18 | Forma discreta e conferência | 0:55 | 14:00 |
-| 19 | Simulação em Python | 0:45 | 14:45 |
-| 20 | Cenários e métricas ⏩ | 0:20 | 15:05 |
-| 21 | Resultados | 0:35 | 15:40 |
-| 22 | Cenário C1 | 0:25 | 16:05 |
-| 23 | Cenário C2 | 0:35 | 16:40 |
-| 24 | Cenário C3 | 0:25 | 17:05 |
-| 25 | Feedforward antecipado | 0:45 | 17:50 |
-| 26 | Velocidade da válvula | 0:30 | 18:20 |
-| 27 | Conclusões | 0:50 | 19:10 |
-| 28 | Trabalhos futuros e agradecimento | 0:30 | 19:40 |
+| 18 | Forma discreta e conferência | 0:40 | 13:45 |
+| 19 | Simulação em Python | 0:45 | 14:30 |
+| 20 | Cenários e métricas ⏩ | 0:20 | 14:50 |
+| 21 | Resultados | 0:35 | 15:25 |
+| 22 | Cenário C1 | 0:25 | 15:50 |
+| 23 | Cenário C2 | 0:35 | 16:25 |
+| 24 | Cenário C3 | 0:25 | 16:50 |
+| 25 | Conclusões | 0:40 | 17:30 |
+| 26 | Trabalhos futuros e agradecimento | 0:20 | 17:50 |
 
 **Pontos de controle do relógio** (quando o slide aparece):
 
@@ -67,8 +65,8 @@ Ao mudar de bloco, diga uma frase de transição. Elas estão marcadas com ➜ n
 |---|---|
 | 8 | 3:45 |
 | 14 | 8:15 |
-| 20 | 14:45 |
-| 27 | 18:20 |
+| 20 | 14:30 |
+| 25 | 16:50 |
 
 Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
@@ -304,17 +302,17 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
 *Versão curta da figura: "os polos ficam exatamente no canto da região pedida".*
 
-### Slide 18: Forma discreta e conferência (0:55)
-**Mostre:** as duas equações de cima, o exemplo numérico, depois a Figura 20 (curvas sem limite, depois com limite) e a conta 1,34 s⁻¹ embaixo.
+### Slide 18: Forma discreta e conferência (0:40)
+**Mostre:** as duas equações à esquerda; depois, na Figura 20, a curva sem limite (sobre a FT) e a curva com limite.
 
 **Ideia:** o modelo linear acerta os polos, mas quem define o tempo real é a velocidade da válvula.
 
 **Fala:**
-> No programa, a integral vira uma soma a cada milissegundo. Um exemplo: com a pressão em 3,6, o erro é 0,1, e a válvula recebe ordem de abrir de 2,3 para 10,7 por cento.
+> No programa, a integral vira uma soma a cada milissegundo, e o comando é o *feedforward* mais o PI.
 >
-> Para conferir o projeto, a Figura 20 mostra um bico fechando no simulador completo. Sem o limite de velocidade da válvula, o PI acomoda em 0,44 segundo, dentro do que pedi, e a curva fica em cima da função de transferência.
+> Para conferir o projeto, a Figura 20 mostra um bico fechando no simulador completo. Sem o limite de velocidade da válvula, o PI acomoda em 0,44 segundo, e a curva fica em cima da função de transferência.
 >
-> Com o limite real, a acomodação vai para 0,63 segundo. A conta embaixo explica: o controlador pede 1,34 por segundo, e a válvula só anda 0,5.
+> Com a válvula real, que anda no máximo 0,5 por segundo, a acomodação vai para 0,63 segundo. A válvula é mais lenta do que o controlador pede.
 
 ### Slide 19: Simulação em Python (0:45)
 **Mostre:** a Figura 16 de cima para baixo, seguindo os passos 1 a 5 da lista.
@@ -362,45 +360,21 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 **Fala:**
 > O C3 imita a aplicação localizada: 66 trocas em 20 segundos. O PI fica 8,3 por cento fora da faixa, principalmente quando várias trocas no mesmo sentido chegam seguidas. O *feedforward* antecipado fica com 4,4. Sem antecipação, o mesmo *feedforward* era pior que o PI: 9,5.
 
-### Slide 25: Feedforward antecipado (0:45)
-**Mostre:** na Figura 24, a linha "o bico fecha" em 0,5 s; a curva azul começando a se mexer antes, em 0,3 s; e a tracejada passando do ponto.
-
-**Ideia:** antecipar 0,2 s faz a válvula começar a andar antes da troca, e isso reduz o erro.
-
-**Fala:**
-> A Figura 24 mostra por que a antecipação faz diferença. Um bico fecha em meio segundo.
->
-> Sem antecipar, na linha tracejada, o *feedforward* não ajuda. O PI já manda abrir no mesmo instante, e as duas correções somadas passam do ponto.
->
-> Antecipando 0,2 segundo, na curva azul, a válvula começa a abrir antes. A pressão cai um pouco, para 3,44, ainda dentro da faixa. Quando o bico fecha, o salto é menor. O erro dessa troca foi 0,064, contra 0,071 do PI. No C3, esse ganho se repete em cada troca.
-
-### Slide 26: Velocidade da válvula (0:30)
-**Mostre:** a primeira linha da tabela (válvula estimada) e depois a segunda (2× mais rápida).
-
-**Ideia:** o que mais limita o resultado é a velocidade da válvula.
-
-**Fala:**
-> O que mais pesa no resultado é a velocidade da válvula. Para três bicos, ela precisa andar 0,36, o que leva cerca de 0,7 segundo. Com uma válvula duas vezes mais rápida, o C3 cai para 0,4 por cento com o PI e 0,1 com o *feedforward* antecipado.
-
-### Slide 27: Conclusões (0:50)
+### Slide 25: Conclusões (0:40)
 **Ideia:** hipótese confirmada em parte e só em simulação.
 
 **Fala:**
-> Para concluir.
+> Para concluir. Um modelo simples, com uma constante de bico e a curva da fonte, reproduziu a bancada.
 >
-> Um modelo com uma constante de bico e uma curva de fonte reproduziu a bancada.
+> Uma única sintonia por alocação de polos serve para qualquer número de bicos. O PI zera o erro, e o PI com *feedforward* antecipado foi o melhor.
 >
-> Como o ganho da planta não depende do número de bicos, uma única sintonia por alocação de polos serve para todos os casos.
+> O que ainda limita é a válvula: quando três bicos trocam juntos, a pressão sai da faixa por cerca de meio segundo.
 >
-> O PI zera o erro, e o *feedforward* antecipado em 0,2 segundo foi o melhor dos três.
->
-> Mas, quando três bicos fecham juntos, a pressão ainda sai da faixa por cerca de meio segundo, porque a válvula é lenta.
->
-> Por isso, a hipótese foi confirmada em parte e só em simulação. Os parâmetros da válvula foram estimados, e falta medir a pressão no tempo, na bancada.
+> Por isso, a hipótese foi confirmada em parte, e só em simulação.
 
-### Slide 28: Trabalhos futuros e agradecimento (0:30)
+### Slide 26: Trabalhos futuros e agradecimento (0:20)
 **Fala:**
-> Como próximos passos, o mais importante é medir a velocidade e a curva da válvula na bancada. Depois: medir a resposta da malha, testar uma válvula mais rápida com antecipação ajustada ao tamanho da troca e estender o anti-windup ao limite de velocidade.
+> O próximo passo mais importante é medir na bancada a válvula e a pressão no tempo. Depois, testar uma válvula mais rápida e levar o sistema para barras comerciais e para o campo.
 >
 > Agradeço a atenção e fico à disposição para as perguntas.
 
@@ -418,7 +392,10 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 | Por que o FF é −K_n/K_g? | Para anular o bico, K_g·ΔA = −K_n·ΔN, logo ΔA = −(K_n/K_g)·ΔN = +0,121 por bico fechado; é o F = −G₂/G_p do Castrucci com ganhos estáticos. | 3.5.4 |
 | Por que o salto não é sobressinal? | Pelo teorema do valor inicial, ΔP(0⁺) = K_n·ΔN com qualquer controlador: a correção ainda não passou pela válvula. | 3.5.4, 4.2 |
 | Com ζ = 0,7, o sobressinal não seria 4,6%? | Na forma padrão, sim; aqui a resposta aos bicos tem zeros (0 e −5), então a forma muda: a pressão passa 10% do salto abaixo da referência. | 2.6.2, 4.2 |
-| Por que t_s = 0,5 s, se a válvula sozinha leva 0,8 s? | A realimentação deixa a malha mais rápida que a válvula livre (polo do P em −16 contra −5 da válvula); com o limite de velocidade, o tempo real foi medido no simulador: 0,63 s. | 3.5.5, 4.2 |
+| Por que t_s = 0,5 s, se a válvula sozinha leva 0,8 s? | A realimentação deixa a malha mais rápida que a válvula livre (polo do P em −16 contra −5 da válvula); com o limite de velocidade, o tempo real foi medido no simulador: 0,63 s, porque o PI pede 0,827 × 0,323 / 0,2 = 1,34 s⁻¹ e a válvula só anda 0,5. | 3.5.5, 4.2 |
+| Como o PI calcula um comando na prática? | Com 7 bicos e P = 3,6 (e = 0,1, I = 0): α_c = 0,023 + 0,827·(0,1 + 0,0001/0,084) = 0,107, ou seja, a válvula vai de 2,3% para 10,7%. | 3.5.3 |
+| Como a antecipação reduz o erro numa troca? | A válvula começa a abrir 0,2 s antes do bico fechar; a pressão cai a 3,44 (dentro da faixa) e o salto fica em 3,79 contra 3,83; IAE da troca 0,064 contra 0,071 do PI (Figura 24). | 4.6 |
+| E com uma válvula mais rápida? | É o que mais pesa: com a válvula 2× mais rápida o C3 cai para 0,4% (PI) e 0,1% (PI+FF); para três bicos a válvula anda 0,36, cerca de 0,7 s a 0,5 s⁻¹. | 4.6 |
 | A antecipação entra na função de transferência? | Não: ela usa n(t + T_ant), um valor do futuro, que uma FT comum não representa; por isso foi avaliada só no simulador. | 3.5.4, 4.6 |
 | Por que o FF sem antecipação não ajudou? | Não há atraso puro para aproveitar (diferente do Ex. 7.4 do Castrucci), e o PI e o FF corrigem a mesma coisa ao mesmo tempo: a soma passa do ponto (s² no numerador da Eq. 3.28). | 4.6 |
 | Por que 0,2 s de antecipação? | É perto do tempo que a válvula leva para compensar um bico (0,121/0,5 ≈ 0,24 s); para três bicos seria preciso cerca de 0,7 s, que ficou como trabalho futuro. | 3.5.1, 4.6 |
@@ -434,7 +411,7 @@ Se estiver mais de 30 s atrasado num deles, use os ⏩.
 
 ## Dicas para o dia
 
-- Ensaie com cronômetro duas vezes. Aos 5 minutos você deve estar no slide 9; aos 10 minutos, no slide 15; aos 15 minutos, no slide 20.
+- Ensaie com cronômetro duas vezes. Aos 5 minutos você deve estar no slide 9; aos 10 minutos, no slide 15; aos 15 minutos, no slide 21.
 - Nos slides de equação (13 a 18), aponte cada equação enquanto fala e diga o número dela.
 - Nos slides com gráfico, diga primeiro o que cada eixo mostra e depois o resultado.
 - Quando não lembrar a fala, diga a **Ideia** do slide e passe para o próximo.

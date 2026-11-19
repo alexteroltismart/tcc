@@ -1,6 +1,7 @@
 """Monta a apresentação da banca (TCC v25, 20 min) sobre o modelo institucional da UNEMAT.
 Versão simples (18/11/2026): sem cartões coloridos nem números em destaque, texto em bullets curtos,
-equações em preto, tabelas em grade simples; slide "o que as FTs mostram" retirado; slide introdutório de pulverização e slide da simulação em Python (28 slides).
+equações em preto, tabelas em grade simples; slide "o que as FTs mostram" retirado; slide introdutório de pulverização e slide da simulação em Python.
+19/11/2026: retirados os slides de antecipação e de velocidade da válvula; conclusões e trabalhos futuros enxutos (26 slides). Anterior: build_deck_v25b.py.
 Versão polida do mesmo dia: build_deck_v25a.py. Anteriores: build_deck_v20.py, build_deck_v19.py, build_deck_v15.py."""
 import copy
 from pathlib import Path
@@ -43,8 +44,8 @@ def duplica_fundo(src):
     return novo
 
 
-# 27 slides de conteúdo + capa = 28; o modelo tem 20 → 8 cópias
-slides += [duplica_fundo(slides[2]) for _ in range(8)]
+# 25 slides de conteúdo + capa = 26; o modelo tem 20 → 6 cópias
+slides += [duplica_fundo(slides[2]) for _ in range(6)]
 cont = iter(slides[1:])
 
 
@@ -422,24 +423,16 @@ notes(s, "Escolhi zeta 0,7 e ts 0,5 s. Omega n = 11,43. Comparando termo a termo
 # ================================================================ 17. forma discreta + conferência
 s = next(cont)
 title(s, "Forma discreta e conferência no simulador")
-text(s, 0.6, 2.4, 6.6, 0.4, ["~ a cada passo de 1 ms:"], size=16)
-eq(s, "d1", "I_k = I_{k-1} + e_k\\,\\Delta t", 0.9, 2.85, size=19, max_w=3.0)
-eq(s, "d2", "\\alpha_{c,k} = \\alpha_{ff}[n(t_k + T_{ant})] + K_c\\left(e_k + \\frac{I_k}{T_i}\\right)", 0.9, 3.45, size=19, max_w=5.4)
-text(s, 0.6, 4.35, 6.6, 0.4, ["~ exemplo: 7 bicos, P = 3,6 (e = 0,1), I = 0:"], size=16)
-eq(s, "d3", "\\alpha_c = 0{,}023 + 0{,}827\\left(0{,}1 + \\frac{0{,}0001}{0{,}084}\\right) = 0{,}107", 0.9, 4.8, size=18, max_w=5.6)
-text(s, 0.6, 5.6, 6.6, 1.3, [
-    "anti-windup: Ik não soma quando o comando está no limite de posição",
-    "PI pede 0,827 × 0,323 / 0,2 = 1,34 s⁻¹, a válvula só anda 0,5 s⁻¹"], size=15)
-w17, h17 = image(s, FIGS / "g_funcao_transferencia.png", 7.5, 2.35, h=3.6, name="FT x simulador")
-caption(s, 7.5, 2.35 + h17, 3.7, "Figura 20: Resposta a um bico fechando, com e sem o limite de velocidade da válvula. Fonte: elaborada pelo autor.")
-text(s, 11.2, 2.4, 1.6, 3.6, [
-    "# sem limite:",
-    "~ ts = 0,44 s",
-    "~ FT ≈ simulador",
-    "# com limite:",
-    "~ ts = 0,63 s"], size=13)
+text(s, 0.6, 2.4, 6.0, 0.4, ["~ a cada passo de 1 ms:"], size=17)
+eq(s, "d1", "I_k = I_{k-1} + e_k\\,\\Delta t", 0.9, 2.9, size=20, max_w=3.0)
+eq(s, "d2", "\\alpha_{c,k} = \\alpha_{ff}[n(t_k + T_{ant})] + K_c\\left(e_k + \\frac{I_k}{T_i}\\right)", 0.9, 3.55, size=20, max_w=5.6)
+text(s, 0.6, 4.7, 6.0, 2.0, [
+    "sem limite de velocidade: ts = 0,44 s, igual à FT",
+    "com a válvula real (0,5 s⁻¹): ts = 0,63 s"], size=17)
+w17, h17 = image(s, FIGS / "g_funcao_transferencia.png", 6.9, 2.3, h=4.3, name="FT x simulador")
+caption(s, 6.9, 2.3 + h17, w17, "Figura 20: Resposta a um bico fechando, com e sem o limite de velocidade da válvula. Fonte: elaborada pelo autor.")
 simbolos(s, "Ik: integral discreta · ek: erro no passo k · Δt: 1 ms")
-notes(s, "A integral vira soma de retângulos. No exemplo a válvula vai de 2,3% para 10,7%. Sem limite de velocidade o PI acomoda em 0,44 s e bate com a FT; com o limite real vai para 0,63 s, porque o PI pede 1,34 por segundo e a válvula dá 0,5.")
+notes(s, "A integral vira soma de retângulos a cada milissegundo. Sem limite de velocidade o PI acomoda em 0,44 s, igual à função de transferência; com a válvula real vai para 0,63 s, porque ela é mais lenta do que o PI pede.")
 
 # ================================================================ simulação em Python
 s = next(cont)
@@ -469,8 +462,7 @@ text(s, 0.6, 2.5, 12.1, 4.4, [
     "C2: degraus de 3 bicos, como no ensaio de Rosa (14 s)",
     "C3: um bico sorteado troca a cada 0,1–0,5 s (20 s, 66 trocas)",
     "métricas: tempo fora da faixa ±10% (3,15 a 3,85 kgf/cm²) e IAE",
-    "configurações: malha aberta, P, PI e PI+FF antecipado 0,2 s",
-    "C2 e C3 também com a válvula 2× e 4× mais rápida"])
+    "configurações: malha aberta, P, PI e PI+FF antecipado 0,2 s"])
 notes(s, "Três cenários, do mais simples ao mais difícil. Critério principal: tempo fora da faixa de ±10%.")
 
 # ================================================================ 19. resultados
@@ -523,57 +515,26 @@ for cod, arq, nfig, sub, legenda, itens, nota in CENARIOS:
     text(s, x0, 4.2, 12.75 - x0, 2.7, itens, size=15)
     notes(s, nota)
 
-# ================================================================ 23. antecipação
-s = next(cont)
-title(s, "Feedforward antecipado")
-w23, h23 = image(s, FIGS / "j_antecipacao.png", 0.6, 2.35, h=4.3, name="Antecipação")
-caption(s, 0.6, 2.35 + h23 + 0.02, w23, "Figura 24: Um bico fechando: PI, PI+FF sem antecipação e PI+FF antecipado em 0,2 s. Fonte: elaborada pelo autor.")
-text(s, 0.95 + w23, 2.45, 12.75 - (0.95 + w23), 4.4, [
-    "IAE da troca: PI 0,071 · FF sem antecipar 0,083 · FF antecipado 0,064",
-    "sem antecipar, PI e FF corrigem juntos e passam do ponto",
-    "antecipando, a válvula começa a abrir em t = 0,3 s",
-    "a pressão cai a 3,44 antes e o salto vai a 3,79 (contra 3,83)"], size=15)
-notes(s, "Sem antecipar, o FF não ajuda: o PI já reage na hora e a soma passa do ponto. Antecipando 0,2 s a válvula começa a abrir antes e o salto fica menor. IAE 0,064 contra 0,071 do PI.")
-
-# ================================================================ 24. velocidade da válvula
-s = next(cont)
-title(s, "Velocidade da válvula")
-tabela(s, 0.6, 2.5, (3.0, 1.15, 1.15, 1.15, 1.15), [
-    ("ωmax", "C2 PI", "C2 PI+FF", "C3 PI", "C3 PI+FF"),
-    ("0,5 s⁻¹ (estimado)", "6,8%", "5,1%", "8,3%", "4,4%"),
-    ("1,0 s⁻¹ (2×)", "3,4%", "2,7%", "0,4%", "0,1%"),
-    ("2,0 s⁻¹ (4×)", "1,7%", "1,4%", "0,2%", "0,1%")], size=14, alt=0.45, name="Tabela velocidade")
-caption(s, 0.6, 4.35, 7.6, "Tempo fora da faixa para cada velocidade máxima da válvula (seção 4.6). Fonte: elaborada pelo autor.")
-text(s, 8.4, 2.5, 4.4, 4.4, [
-    "o salto acontece com qualquer controlador",
-    "3 bicos: válvula anda 0,36 → ≈ 0,7 s de rampa",
-    "válvula 2× mais rápida: C3 cai para 0,4% (PI) e 0,1% (PI+FF)"], size=16)
-notes(s, "A velocidade da válvula é o que mais pesa. Para três bicos a rampa leva uns 0,7 s. Com a válvula duas vezes mais rápida o C3 fica quase zero.")
-
-# ================================================================ 25. conclusões
+# ================================================================ conclusões
 s = next(cont)
 title(s, "Conclusões")
 text(s, 0.6, 2.5, 12.1, 4.4, [
-    "modelo com 1 constante de bico (R₁/n²) + curva da fonte reproduz a bancada (erro ≤ 0,7% na pressão)",
-    "ganho da planta não depende do nº de bicos → uma sintonia por alocação de polos serve para todos",
-    "PI zera o erro; PI+FF antecipado 0,2 s foi o melhor (C3: 8,3% → 4,4%)",
-    "3 bicos fechando juntos: pressão fora da faixa por 0,4 s (FF) a 0,5 s (PI), a válvula é lenta",
-    "hipótese confirmada em parte e só em simulação: τa, ωmax e curva da válvula estimados, falta medir a pressão no tempo na bancada"])
-notes(s, "Modelo simples funcionou, uma sintonia serve para todos, o FF antecipado foi o melhor. Trocas triplas ainda saem da faixa. Hipótese confirmada em parte, só em simulação.")
+    "modelo simples (R₁/n² + curva da fonte) reproduz a bancada (erro ≤ 0,7%)",
+    "uma sintonia por alocação de polos serve para qualquer nº de bicos",
+    "PI zera o erro; PI+FF antecipado foi o melhor (C3: 8,3% → 4,4%)",
+    "a válvula lenta é o limite: 3 bicos juntos ainda saem da faixa por ≈ 0,5 s",
+    "hipótese confirmada em parte: resultados só em simulação"], size=18)
+notes(s, "O modelo simples reproduz a bancada, uma sintonia serve para todos os bicos e o PI+FF antecipado foi o melhor. O que ainda limita é a velocidade da válvula. A hipótese foi confirmada em parte, porque tudo foi em simulação.")
 
-# ================================================================ 26. trabalhos futuros
+# ================================================================ trabalhos futuros
 s = next(cont)
 title(s, "Trabalhos futuros")
-text(s, 0.6, 2.5, 12.1, 3.9, [
-    "medir a velocidade e a curva de abertura da válvula",
-    "medir a resposta da malha na bancada e ajustar ζ e ts com o ruído do sensor",
-    "válvula mais rápida e antecipação conforme o tamanho da troca (≈ 0,7 s para 3 bicos)",
-    "congelar a integral do PI durante a antecipação",
-    "anti-windup também no limite de velocidade (C3 com PI: 8,3% → 3,2% num teste)",
-    "barras comerciais: perda ao longo da barra e mangueira",
-    "validar com registros de campo"], size=17)
+text(s, 0.6, 2.5, 12.1, 3.4, [
+    "medir na bancada a válvula (velocidade e curva) e a pressão no tempo",
+    "válvula mais rápida e antecipação ajustada ao tamanho da troca",
+    "testar em barras comerciais e no campo"], size=18)
 text(s, 0.6, 6.4, 12.1, 0.5, ["# Obrigado!"], size=24, color=NAVY, name="Obrigado")
-notes(s, "Começar pelo mais importante: medir a válvula. Agradecer e abrir para perguntas.")
+notes(s, "O principal é medir a válvula e a pressão na bancada. Depois, válvula mais rápida e testes em barra comercial e no campo. Agradecer e abrir para perguntas.")
 
 assert next(cont, None) is None, "sobrou slide do modelo"
 prs.core_properties.title = "Modelagem de sistema de controle para pulverização agrícola de precisão"
